@@ -308,6 +308,32 @@ strong{color:var(--ink);font-weight:800}
   font-size:clamp(1.6rem,3.6vw,2.5rem);font-weight:500;color:#F5F1E4;line-height:1.6;
 }
 .pasuk .trans{margin-top:14px;font-size:1rem;color:#B9C7BA;font-style:italic}
+.lechaim{
+  display:inline-block;font-weight:700;padding:0 .1em;
+  background:linear-gradient(100deg,#E8B54D 10%,#F9E9B0 38%,#F4B96A 55%,#E8B54D 90%);
+  background-size:220% 100%;
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 14px rgba(244,185,106,.45));
+  animation:lechaimShimmer 5.5s ease-in-out infinite;
+}
+@keyframes lechaimShimmer{0%,100%{background-position:0% 0}50%{background-position:100% 0}}
+@media (prefers-reduced-motion:reduce){.lechaim{animation:none}}
+.lechaim .cup{width:.72em;height:.72em;fill:#F4B96A;vertical-align:-.06em;margin:0 .2em}
+.lechaim .cup--r{transform:rotate(14deg)}
+.lechaim .cup--l{transform:rotate(-14deg)}
+
+/* ---------- intro-strip name ---------- */
+.intro-name{display:flex;flex-direction:column;gap:7px;align-items:center}
+.intro-name__name{
+  font-family:'Fraunces',serif;font-size:clamp(1.7rem,3.2vw,2.25rem);font-weight:600;
+  color:var(--forest-deep);line-height:1.15;position:relative;padding-bottom:14px;
+}
+.intro-name__name::after{
+  content:"";position:absolute;left:50%;bottom:0;transform:translateX(-50%);
+  width:132px;height:2px;
+  background:repeating-linear-gradient(90deg,var(--autumn) 0 10px,transparent 10px 16px);
+}
+.intro-name__sub{font-size:1rem;color:var(--sage);font-weight:700;letter-spacing:.02em}
 
 /* ---------- CTA band ---------- */
 .cta{
