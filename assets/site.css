@@ -144,10 +144,22 @@ strong{color:var(--ink);font-weight:800}
 
 /* ---------- hero ---------- */
 .hero{position:relative;overflow:hidden;min-height:clamp(540px,80vh,742px);display:flex;align-items:center;padding:112px 0 96px}
-.hero__bg{
-  position:absolute;inset:0;pointer-events:none;
-  background:url("img/hero-home.webp") center 44%/cover no-repeat;
-  transform:scale(1.05);animation:heroPan 32s ease-in-out infinite alternate;
+/* the hero is one SVG scene: photo + road path + the pasuk that drives along it,
+   so the text stays glued to the road at every zoom level and viewport size */
+.hero__scene{
+  position:absolute;inset:0;overflow:hidden;pointer-events:none;
+  transform:translate3d(var(--drift-x,0px),var(--drift-y,0px),0);
+  transition:transform .6s cubic-bezier(.22,.61,.36,1);
+}
+.hero__road{
+  position:absolute;inset:0;width:100%;height:100%;display:block;
+  transform-origin:60% 4%; /* the road's vanishing point */
+  animation:heroDrive 34s cubic-bezier(.42,0,.58,1) infinite alternate;
+}
+@keyframes heroDrive{from{transform:scale(1.03)}to{transform:scale(1.24)}}
+.road-pasuk{
+  font-family:'Frank Ruhl Libre',Georgia,serif;fill:#FDECC9;
+  paint-order:stroke;stroke:rgba(10,26,16,.62);stroke-width:4px;stroke-linejoin:round;
 }
 @keyframes heroPan{from{transform:scale(1.05)}to{transform:scale(1.13)}}
 .hero__scrim{
@@ -168,7 +180,22 @@ strong{color:var(--ink);font-weight:800}
 .hero__note{font-size:.9rem;color:#CFE0CE;font-weight:800;letter-spacing:.05em}
 .hero .btn--ghost{color:#FCFAF2;border-color:rgba(255,255,255,.55);background:rgba(255,255,255,.06)}
 .hero .btn--ghost:hover{background:rgba(255,255,255,.16);border-color:#fff;color:#fff}
-@media (prefers-reduced-motion:reduce){.hero__bg{animation:none;transform:scale(1.02)}}
+.hero__pasuk{font-family:'Frank Ruhl Libre',Georgia,serif;font-size:1.4rem;margin:6px 0 4px;color:#E9EFE6}
+@media (prefers-reduced-motion:reduce){
+  .hero__road{animation:none;transform:scale(1.06)}
+  .hero__scene{transition:none}
+}
+/* above the mobile breakpoint the pasuk lives on the road, so the inline copy
+   is kept for screen readers only */
+@media (min-width:921px){
+  .hero__pasuk{position:absolute;width:1px;height:1px;margin:-1px;padding:0;border:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+}
+@media (max-width:920px){.road-pasuk{display:none}}
+/* no motion means no drive — fall back to the inline pasuk everywhere */
+@media (prefers-reduced-motion:reduce){
+  .road-pasuk{display:none}
+  .hero__pasuk{position:static;width:auto;height:auto;margin:6px 0 4px;clip-path:none;white-space:normal}
+}
 
 /* route illustration (hero) */
 .route-art{position:relative;width:min(400px,76vw);margin:0 auto}

@@ -13,6 +13,7 @@
 <link rel="canonical" href="https://yancheinu.com/">
 <meta property="og:url" content="https://yancheinu.com/">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preload" as="image" href="assets/img/hero-home.webp" fetchpriority="high">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Mulish:wght@400;600;800&family=Frank+Ruhl+Libre:wght@400;500&display=swap" rel="stylesheet">
@@ -75,13 +76,27 @@
 
 <!-- ============ HERO ============ -->
 <section class="hero">
-  <div class="hero__bg" aria-hidden="true"></div>
+  <div class="hero__scene" aria-hidden="true">
+    <svg class="hero__road" viewBox="0 0 1536 1024" preserveAspectRatio="xMidYMid slice" focusable="false">
+      <defs>
+        <path id="yRoad" fill="none" d="M590,1032 C600,970 615,895 655,800 C695,705 745,690 764,610 C778,548 758,510 740,455 C728,418 728,388 744,352 C760,316 796,294 824,266 C852,238 872,212 892,178 C906,152 918,138 930,120"/>
+      </defs>
+      <image href="assets/img/hero-home.webp" x="0" y="0" width="1536" height="1024" preserveAspectRatio="xMidYMid slice"/>
+      <g class="road-pasuk" opacity="0">
+        <text x="0" y="0" font-size="36" text-anchor="middle" dominant-baseline="central">יַנְחֵנוּ בְמַעְגְּלֵי צֶדֶק<animate id="pasukSize" attributeName="font-size" begin="indefinite" dur="26s" repeatCount="indefinite" values="44;26"/></text>
+        <animate id="pasukFade" attributeName="opacity" begin="indefinite" dur="26s" repeatCount="indefinite" values="0;.85;.85;0" keyTimes="0;.16;.74;1"/>
+        <animateMotion id="pasukRun" begin="indefinite" dur="26s" repeatCount="indefinite" rotate="0" calcMode="linear" keyPoints="0.34;0.76" keyTimes="0;1">
+          <mpath href="#yRoad"/>
+        </animateMotion>
+      </g>
+    </svg>
+  </div>
   <div class="hero__scrim" aria-hidden="true"></div>
   <div class="wrap">
     <div class="hero__content reveal in">
       <span class="eyebrow">Shidduch &amp; Life Coaching &middot; Mrs. S. Eisenbach</span>
       <h1>From confusion to <span class="accent-i">clarity.</span></h1>
-      <p dir="rtl" lang="he" style="font-family:'Frank Ruhl Libre',serif;font-size:1.4rem;margin:6px 0 4px;letter-spacing:.02em">&ldquo;יַנְחֵנוּ בְמַעְגְּלֵי צֶדֶק&rdquo;</p>
+      <p class="hero__pasuk" dir="rtl" lang="he">&ldquo;יַנְחֵנוּ בְמַעְגְּלֵי צֶדֶק&rdquo;</p>
       <p class="hero__lead">Navigating shidduchim can feel like a maze &mdash; Yancheinu is your Waze. Warm, experienced guidance for mothers, shadchanim, and singles, so you can walk this road with confidence and menuchas hanefesh.</p>
       <p class="hero__lead"><strong>You don&rsquo;t have to figure it out alone.</strong></p>
       <div class="hero__actions">
@@ -129,6 +144,30 @@
         <li>&ldquo;How do we balance hishtadlus with emunah during the shidduch process?&rdquo;</li>
       </ul>
       <p class="center reveal" data-delay="2" style="margin-top:36px;font-size:1.05rem">You don&rsquo;t have to navigate these questions alone. <strong>Yancheinu provides the clarity, guidance, and practical tools to help you move forward with confidence and menuchas hanefesh.</strong></p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SOUND FAMILIAR — SINGLES ============ -->
+<section class="section section--mist">
+  <div class="wrap">
+    <div class="section__head reveal">
+      <span class="eyebrow" style="justify-content:center">For singles</span>
+      <h2>Do These Questions Feel Familiar?</h2>
+      <p>You&rsquo;re not alone. Most singles quietly wonder:</p>
+    </div>
+    <div class="wrap--narrow" style="margin:0 auto">
+      <ul class="pinlist reveal" data-delay="1">
+        <li>&ldquo;Why am I so confused after every bashow?&rdquo;</li>
+        <li>&ldquo;Is this real hesitation &mdash; or just nerves?&rdquo;</li>
+        <li>&ldquo;Should I really meet &lsquo;one more time&rsquo;?&rdquo;</li>
+        <li>&ldquo;How do I know if I&rsquo;m saying no for the right reasons?&rdquo;</li>
+        <li>&ldquo;How do I sort through everyone&rsquo;s advice without losing my own voice?&rdquo;</li>
+        <li>&ldquo;How do I navigate the differences between my parents&rsquo; view and mine?&rdquo;</li>
+        <li>&ldquo;How do I stop second-guessing myself?&rdquo;</li>
+        <li>&ldquo;How can I make decisions with clarity and confidence?&rdquo;</li>
+      </ul>
+      <p class="center reveal" data-delay="2" style="margin-top:36px;font-size:1.05rem">If these feel like you, <strong>Yancheinu is here to help you find calm, clarity, and confidence &mdash; from the inside out.</strong></p>
     </div>
   </div>
 </section>
