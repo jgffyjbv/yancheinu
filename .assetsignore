@@ -1,0 +1,11 @@
+# Never publish these. The repo root is the assets directory, so without
+# this file the whole .git history gets served publicly.
+**/.git
+**/.github
+**/.wrangler
+**/.DS_Store
+**/node_modules
+.gitignore
+.assetsignore
+wrangler.jsonc
+CNAME

@@ -1,0 +1,11 @@
+{
+  // Static site served straight from this folder by an assets-only Worker.
+  // Deploy with:  npx wrangler deploy
+  // Pushing to GitHub does NOT publish the site — this command does.
+  "name": "yancheinu",
+  "compatibility_date": "2026-07-28",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": "."
+  }
+}
