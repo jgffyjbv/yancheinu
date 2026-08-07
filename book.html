@@ -72,7 +72,7 @@
   <div class="wrap reveal in">
     <span class="eyebrow">Book an Appointment</span>
     <h1>Choose a time that <span class="accent-i">works for you.</span></h1>
-    <p>Pick any open slot on the calendar below &mdash; your appointment is confirmed instantly, goes straight onto Mrs. S. Eisenbach&rsquo;s calendar, and stays completely confidential.</p>
+    <p>Start with a free 15-minute intake, or book a full one-hour session. Either way, your appointment is confirmed instantly, goes straight onto Mrs. S. Eisenbach&rsquo;s calendar, and stays completely confidential.</p>
   </div>
 </section>
 
@@ -82,35 +82,77 @@
     <div class="booking-steps">
       <div class="bstep">
         <span class="bstep__num">1</span>
-        <h3>Pick a time</h3>
-        <p>Choose any open slot &mdash; these are the days and hours Mrs. S. Eisenbach has set aside for private sessions.</p>
+        <h3>Choose what you need</h3>
+        <p>A free 15-minute intake to get acquainted and ask questions, or a full one-hour private session.</p>
       </div>
       <div class="bstep">
         <span class="bstep__num">2</span>
-        <h3>Meet in person, over Zoom, or by phone</h3>
-        <p>Your appointment lands directly on her calendar, and you receive an email confirmation right away. Sessions are held in person, over Zoom, or by phone &mdash; in Boro Park, or from anywhere in the world.</p>
+        <h3>Pick a time</h3>
+        <p>Choose any open slot. Your appointment lands directly on Mrs. S. Eisenbach&rsquo;s calendar and you receive an email confirmation right away.</p>
       </div>
       <div class="bstep">
         <span class="bstep__num">3</span>
-        <h3>Completely confidential</h3>
-        <p>Only Mrs. S. Eisenbach sees your booking. Need to change it? Reschedule or cancel from your confirmation email.</p>
+        <h3>Meet in person, over Zoom, or by phone</h3>
+        <p>In Boro Park, or from anywhere in the world &mdash; and completely confidential. Reschedule or cancel any time from your confirmation email.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ============ BOOKING CALENDAR ============ -->
+<!-- ============ STEP 1 — CHOOSE THE APPOINTMENT ============ -->
+<section class="section--paper" id="choose" style="padding:44px 0 0;scroll-margin-top:90px">
+  <div class="wrap reveal">
+    <div class="section__head" style="margin-bottom:34px">
+      <span class="eyebrow" style="justify-content:center">Step 1</span>
+      <h2>What would you like to book?</h2>
+      <p>Not sure yet? Start with the free intake &mdash; it&rsquo;s there so you can ask whatever you&rsquo;d like before committing to anything.</p>
+    </div>
+    <div class="grid grid--2" id="booking-choices">
+
+      <a class="card booking-choice" data-label="Free 15-Minute Intake"
+         href="https://cal.com/yancheinu-coaching-by-simy-eisenbach-bxlkyj/15min">
+        <span class="badge badge--free">Free</span>
+        <div class="card__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <h3>Intake Meeting</h3>
+        <p class="booking-choice__meta">15 minutes &middot; No charge</p>
+        <p>A short, no-pressure introduction. Share where you&rsquo;re holding, ask your questions, and see whether coaching is the right fit &mdash; with no obligation either way.</p>
+        <span class="more">See available times
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </span>
+      </a>
+
+      <a class="card booking-choice" data-label="1:1 Coaching Session"
+         href="https://cal.com/yancheinu-coaching-by-simy-eisenbach-bxlkyj/11">
+        <div class="card__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>
+        </div>
+        <h3>1:1 Coaching Session</h3>
+        <p class="booking-choice__meta">1 hour &middot; Private session</p>
+        <p>A full private session &mdash; in person, over Zoom, or by phone. Bring the situation you&rsquo;re navigating and leave with clarity and a practical plan.</p>
+        <span class="more">See available times
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </span>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============ STEP 2 — PICK A TIME ============ -->
 <section class="section--paper" style="padding:36px 0 84px">
   <div class="wrap reveal">
-    <div class="booking-card" id="booking-slot" hidden></div>
-    <div class="booking-card booking-fallback" id="booking-fallback" hidden>
-      <h2>Online booking is opening soon</h2>
-      <p>In the meantime, reserving a time is easy &mdash; call, or send a confidential message, and Mrs. S. Eisenbach will find a time that works for you.</p>
-      <div class="hero__actions" style="justify-content:center">
-        <a class="btn" href="tel:+17189264773">Call / Text 718-926-4773</a>
-        <a class="btn btn--ghost" href="contact.html">Send a Confidential Message</a>
+
+    <div id="booking-step2" hidden style="scroll-margin-top:90px">
+      <div class="section__head" style="margin-bottom:26px">
+        <span class="eyebrow" style="justify-content:center">Step 2</span>
+        <h2 id="booking-title">Pick a time</h2>
+        <button type="button" class="btn btn--ghost" id="booking-reset" style="margin-top:6px">Choose a different appointment</button>
       </div>
+      <div class="booking-card" id="booking-slot"></div>
     </div>
+
     <p class="form-note center" style="margin-top:18px">Prefer to talk it through first? Call or text <a href="tel:+17189264773">718-926-4773</a> or <a href="tel:+13477662269">347-766-2269</a>, or <a href="contact.html">send a confidential message</a> &mdash; whatever feels most comfortable.</p>
   </div>
 </section>
@@ -154,24 +196,48 @@
 
 <script>
 // ============================================================
-// GOOGLE CALENDAR BOOKING LINK
-// Paste Mrs. S. Eisenbach's Google Calendar appointment-schedule
-// link between the quotes below (from Google Calendar >
-// appointment schedule > Share > "Open booking page" link).
+// Booking: choose the appointment type, then load that Cal.com
+// calendar inline. The two cards are ordinary links to Cal.com,
+// so this still works with JavaScript off — it just leaves the
+// site instead of embedding.
 // ============================================================
-var BOOKING_URL = "";
-
 (function(){
-  var slot = document.getElementById('booking-slot');
-  var fallback = document.getElementById('booking-fallback');
-  if (!BOOKING_URL) { fallback.hidden = false; return; }
-  var url = BOOKING_URL + (BOOKING_URL.indexOf('gv=true') > -1 ? '' : (BOOKING_URL.indexOf('?') > -1 ? '&gv=true' : '?gv=true'));
-  var f = document.createElement('iframe');
-  f.src = url;
-  f.title = 'Book an appointment with Mrs. S. Eisenbach';
-  f.loading = 'lazy';
-  slot.appendChild(f);
-  slot.hidden = false;
+  var choices = document.getElementById('booking-choices');
+  var step2   = document.getElementById('booking-step2');
+  var slot    = document.getElementById('booking-slot');
+  var title   = document.getElementById('booking-title');
+  var reset   = document.getElementById('booking-reset');
+  if (!choices || !step2 || !slot) return;
+
+  var cards = Array.prototype.slice.call(choices.querySelectorAll('.booking-choice'));
+
+  function open(card){
+    var url = card.getAttribute('href');
+    slot.innerHTML = '';
+    var f = document.createElement('iframe');
+    f.src = url + (url.indexOf('?') > -1 ? '&' : '?') + 'embed=true';
+    f.title = 'Book ' + card.getAttribute('data-label') + ' with Mrs. S. Eisenbach';
+    f.loading = 'lazy';
+    slot.appendChild(f);
+    title.textContent = 'Pick a time — ' + card.getAttribute('data-label');
+    cards.forEach(function(c){ c.classList.toggle('is-active', c === card); });
+    step2.hidden = false;
+    step2.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  choices.addEventListener('click', function(e){
+    var card = e.target.closest ? e.target.closest('.booking-choice') : null;
+    if (!card) return;
+    e.preventDefault();
+    open(card);
+  });
+
+  if (reset) reset.addEventListener('click', function(){
+    step2.hidden = true;
+    slot.innerHTML = '';
+    cards.forEach(function(c){ c.classList.remove('is-active'); });
+    document.getElementById('choose').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
 })();
 </script>
 <script src="assets/site.js" defer></script>

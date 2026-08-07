@@ -374,6 +374,16 @@ strong{color:var(--ink);font-weight:800}
 .bstep__num{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;background:var(--forest);color:#F5F1E4;font-weight:800;font-size:.95rem;margin-bottom:12px}
 .bstep h3{font-family:'Fraunces',serif;font-size:1.15rem;color:var(--forest-deep);margin-bottom:6px}
 .bstep p{font-size:.95rem;color:var(--ink)}
+/* appointment-type chooser */
+.booking-choice{position:relative;display:block;color:inherit}
+.booking-choice:hover{border-color:var(--sage);color:inherit}
+.booking-choice.is-active{border-color:var(--forest);box-shadow:var(--shadow);transform:translateY(-5px)}
+.booking-choice__meta{font-weight:800;color:var(--forest);font-size:.95rem;margin-bottom:12px}
+.badge--free{
+  position:absolute;top:22px;right:22px;
+  background:var(--autumn);border-color:var(--autumn);color:#FBF8EF;
+  letter-spacing:.08em;text-transform:uppercase;font-size:.72rem;padding:6px 14px;
+}
 .booking-card{background:#fff;border:1px solid rgba(30,66,48,.08);border-radius:16px;box-shadow:0 6px 24px rgba(20,46,33,.07);overflow:hidden}
 .booking-card iframe{display:block;width:100%;height:760px;border:0}
 .booking-fallback{padding:56px 28px;text-align:center}
