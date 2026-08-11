@@ -481,6 +481,84 @@ strong{color:var(--ink);font-weight:800}
 }
 
 /* ============================================================
+   chat — receptionist widget, injected by site.js on every page
+   ============================================================ */
+.chat-fab{
+  position:fixed;right:20px;bottom:20px;z-index:80;
+  display:inline-flex;align-items:center;gap:10px;
+  background:var(--forest);color:#FBF8EF;border:1px solid var(--forest);
+  font-family:'Mulish',sans-serif;font-weight:800;font-size:.95rem;
+  padding:13px 22px;border-radius:999px;cursor:pointer;
+  box-shadow:0 10px 28px rgba(20,46,33,.22);
+  transition:transform .3s ease,background .3s ease,box-shadow .3s ease;
+}
+.chat-fab:hover{background:var(--forest-deep);transform:translateY(-2px);box-shadow:0 14px 34px rgba(20,46,33,.28)}
+.chat-fab svg{width:19px;height:19px;flex:none}
+.chat-fab[hidden]{display:none}
+
+.chat-panel{
+  position:fixed;right:20px;bottom:20px;z-index:81;
+  width:min(380px,calc(100vw - 32px));height:min(560px,calc(100vh - 40px));
+  display:flex;flex-direction:column;overflow:hidden;
+  background:var(--paper);border:1px solid var(--line);border-radius:20px;
+  box-shadow:0 26px 60px rgba(20,46,33,.26);
+}
+.chat-panel[hidden]{display:none}
+.chat-head{
+  display:flex;align-items:center;gap:12px;
+  padding:16px 18px;background:var(--forest);color:#FBF8EF;flex:none;
+}
+.chat-head img{width:26px;height:auto;flex:none}
+.chat-head__t{display:flex;flex-direction:column;line-height:1.25;flex:1;min-width:0}
+.chat-head__t b{font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:1.05rem}
+.chat-head__t span{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:#CADCC6;font-weight:800}
+.chat-x{
+  background:none;border:0;color:#CADCC6;cursor:pointer;padding:6px;line-height:0;border-radius:8px;
+}
+.chat-x:hover{color:#fff;background:rgba(255,255,255,.12)}
+
+.chat-log{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:12px}
+.chat-msg{max-width:86%;padding:11px 15px;border-radius:16px;font-size:.96rem;line-height:1.6}
+.chat-msg--bot{align-self:flex-start;background:var(--sage-mist);color:var(--ink);border-bottom-left-radius:5px}
+.chat-msg--me{align-self:flex-end;background:var(--forest);color:#F5F1E4;border-bottom-right-radius:5px}
+.chat-msg a{color:var(--autumn);font-weight:800;text-decoration:underline}
+.chat-msg--me a{color:#F4D8AE}
+
+.chat-chips{display:flex;flex-wrap:wrap;gap:8px;padding:0 18px 14px}
+.chat-chip{
+  background:var(--paper);border:1px solid var(--line);border-radius:999px;
+  padding:7px 14px;font-family:'Mulish',sans-serif;font-size:.85rem;font-weight:700;
+  color:var(--forest);cursor:pointer;transition:background .25s ease,border-color .25s ease;
+}
+.chat-chip:hover{background:var(--sage-mist);border-color:var(--sage)}
+
+.chat-form{display:flex;gap:9px;padding:13px 14px;border-top:1px solid var(--line);background:var(--cream);flex:none}
+.chat-form input{
+  flex:1;min-width:0;font-family:'Mulish',sans-serif;font-size:.95rem;color:var(--ink);
+  padding:11px 15px;border:1px solid var(--line);border-radius:999px;background:#fff;
+}
+.chat-form input:focus{outline:2px solid var(--sage-soft);outline-offset:1px}
+.chat-send{
+  flex:none;width:42px;height:42px;border-radius:50%;border:0;cursor:pointer;
+  background:var(--forest);color:#FBF8EF;display:flex;align-items:center;justify-content:center;
+}
+.chat-send:hover{background:var(--forest-deep)}
+.chat-send:disabled{opacity:.45;cursor:default}
+.chat-note{padding:0 18px 12px;font-size:.75rem;color:var(--sage);text-align:center;line-height:1.5}
+
+.chat-dots{display:inline-flex;gap:4px;align-items:center}
+.chat-dots i{width:6px;height:6px;border-radius:50%;background:var(--sage);animation:chatDot 1.2s infinite ease-in-out}
+.chat-dots i:nth-child(2){animation-delay:.16s}
+.chat-dots i:nth-child(3){animation-delay:.32s}
+@keyframes chatDot{0%,60%,100%{opacity:.3;transform:translateY(0)}30%{opacity:1;transform:translateY(-3px)}}
+@media (prefers-reduced-motion:reduce){.chat-dots i{animation:none;opacity:.6}}
+
+@media (max-width:520px){
+  .chat-fab{right:14px;bottom:14px;padding:12px 18px}
+  .chat-panel{right:8px;left:8px;bottom:8px;width:auto;height:min(78vh,560px)}
+}
+
+/* ============================================================
    print — turns a guide page into a clean handout / the PDF
    ============================================================ */
 .print-brand,.print-foot{display:none}
@@ -489,7 +567,7 @@ strong{color:var(--ink);font-weight:800}
   @page{size:letter;margin:14mm 15mm 12mm}
   *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   html,body{background:#fff;font-size:11pt;line-height:1.6;overflow:visible}
-  .site-header,.site-footer,.cta,.print-hide,
+  .site-header,.site-footer,.cta,.print-hide,.chat-fab,.chat-panel,
   .pagehero__bg,.pagehero__scrim,.hero__actions,.nav__toggle{display:none!important}
   .reveal{opacity:1!important;transform:none!important}
   a{text-decoration:none;color:inherit}

@@ -1,11 +1,15 @@
 {
-  // Static site served straight from this folder by an assets-only Worker.
-  // Deploy with:  npx wrangler deploy
-  // Pushing to GitHub does NOT publish the site — this command does.
+  // Static site + a small receptionist chat, served by one Worker.
+  // Deploy with:  npx wrangler deploy   (a push to main does this too)
   "name": "yancheinu",
+  "main": "worker/index.js",
   "compatibility_date": "2026-07-28",
   "compatibility_flags": ["nodejs_compat"],
   "assets": {
-    "directory": "."
+    "directory": ".",
+    "binding": "ASSETS"
+  },
+  "ai": {
+    "binding": "AI"
   }
 }

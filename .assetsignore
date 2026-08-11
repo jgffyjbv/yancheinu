@@ -8,5 +8,6 @@
 .gitignore
 .assetsignore
 wrangler.jsonc
+**/worker
 CLAUDE.md
 CNAME
