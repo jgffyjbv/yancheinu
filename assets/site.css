@@ -484,7 +484,7 @@ strong{color:var(--ink);font-weight:800}
    chat — receptionist widget, injected by site.js on every page
    ============================================================ */
 .chat-fab{
-  position:fixed;right:20px;bottom:20px;z-index:80;
+  position:fixed;right:20px;bottom:38px;z-index:80;
   display:inline-flex;align-items:center;gap:10px;
   background:var(--forest);color:#FBF8EF;border:1px solid var(--forest);
   font-family:'Mulish',sans-serif;font-weight:800;font-size:.95rem;
@@ -554,7 +554,7 @@ strong{color:var(--ink);font-weight:800}
 @media (prefers-reduced-motion:reduce){.chat-dots i{animation:none;opacity:.6}}
 
 @media (max-width:520px){
-  .chat-fab{right:14px;bottom:14px;padding:12px 18px}
+  .chat-fab{right:14px;bottom:26px;padding:12px 18px}
   .chat-panel{right:8px;left:8px;bottom:8px;width:auto;height:min(78vh,560px)}
 }
 
