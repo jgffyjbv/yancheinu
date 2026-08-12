@@ -487,13 +487,15 @@ strong{color:var(--ink);font-weight:800}
 .chat-fab{
   position:fixed;right:20px;bottom:38px;z-index:80;
   display:inline-flex;align-items:center;gap:10px;
-  background:var(--forest);color:#FBF8EF;border:1px solid var(--forest);
+  /* autumn, not forest — it has to stand out over the cream sections AND the
+     dark green footer, and forest disappeared into the footer entirely */
+  background:var(--autumn);color:#FBF8EF;border:1px solid var(--autumn);
   font-family:'Mulish',sans-serif;font-weight:800;font-size:.95rem;
   padding:13px 22px;border-radius:999px;cursor:pointer;
-  box-shadow:0 10px 28px rgba(20,46,33,.22);
+  box-shadow:0 10px 30px rgba(201,112,46,.36);
   transition:transform .3s ease,background .3s ease,box-shadow .3s ease;
 }
-.chat-fab:hover{background:var(--forest-deep);transform:translateY(-2px);box-shadow:0 14px 34px rgba(20,46,33,.28)}
+.chat-fab:hover{background:#B25E20;border-color:#B25E20;transform:translateY(-2px);box-shadow:0 14px 36px rgba(201,112,46,.44)}
 .chat-fab svg{width:19px;height:19px;flex:none}
 .chat-fab[hidden]{display:none}
 
