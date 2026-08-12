@@ -458,7 +458,8 @@ strong{color:var(--ink);font-weight:800}
 .footer-links a:hover{color:#F5F1E4}
 .footer-bottom{
   border-top:1px solid rgba(237,232,218,.12);
-  padding:22px 24px;font-size:.85rem;color:#8AA58C;
+  /* extra room at the foot so the fixed chat button never sits on the credit line */
+  padding:22px 24px 76px;font-size:.85rem;color:#8AA58C;
 }
 .footer-bottom .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px}
 .footer-bottom a{color:#A9BFA9}
