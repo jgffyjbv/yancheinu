@@ -1,5 +1,6 @@
 {
-  // Static site + a small receptionist chat, served by one Worker.
+  // The website: the HTML pages in this folder, served by one small Worker (worker/index.js) that adds
+  // the receptionist chat, the owner's /admin screens, the blog and the visitor count.
   // Deploy with:  npx wrangler deploy   (a push to main does this too)
   "name": "yancheinu",
   "main": "worker/index.js",
@@ -7,9 +8,20 @@
   "compatibility_flags": ["nodejs_compat"],
   "assets": {
     "directory": ".",
-    "binding": "ASSETS"
+    "binding": "ASSETS",
+    // Pages pass through the Worker so the owner's saved wording can be put in; everything under /assets/
+    // (images, CSS, scripts, the PDF) is served directly and never touches it.
+    "run_worker_first": ["/*", "!/assets/*"]
   },
   "ai": {
     "binding": "AI"
-  }
+  },
+  // What the owner saves in /admin: her wording for each page, and the blog articles.
+  "kv_namespaces": [{ "binding": "CONTENT", "id": "0095bd453c38481bbca15bd062bc0332" }],
+  // Visitor counts and the wrong-password counter. Tables: worker/schema.sql
+  "d1_databases": [{ "binding": "DB", "database_name": "yancheinu-stats", "database_id": "31aa5270-c517-4d92-94e4-05fefc58367c" }],
+  "observability": { "enabled": true }
+  // Two secrets are set once with `npx wrangler secret put <NAME>` and are NOT in this repository:
+  //   ADMIN_PASSWORD   the password for /admin
+  //   SESSION_SECRET   any long random text; signs the sign-in cookie
 }

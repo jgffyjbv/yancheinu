@@ -8,6 +8,9 @@
 .gitignore
 .assetsignore
 wrangler.jsonc
+wrangler.staging.jsonc
+**/.claude
+**/.dev.vars
 **/worker
 CLAUDE.md
 HANDOVER.md

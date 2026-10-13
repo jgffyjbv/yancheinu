@@ -1,0 +1,23 @@
+{
+  // A private test copy of the site: https://yancheinu-staging.avrumy95.workers.dev
+  // Its storage is separate from the real site's, so anything may be tried here.
+  // Deploy with:  npx wrangler deploy --config wrangler.staging.jsonc
+  "name": "yancheinu-staging",
+  "main": "worker/index.js",
+  "compatibility_date": "2026-07-28",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "assets": {
+    "directory": ".",
+    "binding": "ASSETS",
+    "run_worker_first": ["/*", "!/assets/*"]
+  },
+  "ai": {
+    "binding": "AI"
+  },
+  // PREVIEW asks search engines to stay away from the test copy
+  "vars": { "PREVIEW": "1" },
+  "kv_namespaces": [{ "binding": "CONTENT", "id": "918af0d96782481abb3d27b86da234ed" }],
+  "d1_databases": [{ "binding": "DB", "database_name": "yancheinu-staging-stats", "database_id": "82466232-8166-4d63-9aa9-c3f77b061886" }],
+  "observability": { "enabled": true }
+}

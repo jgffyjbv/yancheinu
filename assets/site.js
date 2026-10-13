@@ -112,6 +112,7 @@
         .replace(/Book a Session page|Book a Session|booking page/gi, '<a href="book.html">$&</a>')
         .replace(/Free Guides page|free guide(?! for)/gi, '<a href="calm-before-a-meeting.html">$&</a>')
         .replace(/Contact page/gi, '<a href="contact.html">$&</a>')
+        .replace(/Kallah Coaching page/gi, '<a href="kallahs.html">$&</a>')
         .replace(/(347-766-2269|718-926-4773)/g, '<a href="tel:+1$1">$1</a>')
         .replace(/(yancheinucoaching@gmail\.com)/g, '<a href="mailto:$1">$1</a>');
     }

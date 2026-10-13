@@ -3,7 +3,7 @@
 Written so that this website can be recovered and kept running by someone other
 than the person who built it. Nothing here is a password. It is a map.
 
-Last updated: 9 August 2026.
+Last updated: 12 October 2026.
 
 ---
 
@@ -29,6 +29,9 @@ point of failure worth planning around.
 | Domain `yancheinu.com` | **Registered with Cloudflare Registrar**, same account | Same account |
 | DNS | Cloudflare nameservers `daisy` / `major.ns.cloudflare.com` | Same account |
 | The chat | Cloudflare Workers AI, free allowance | Same account |
+| Wording changed in /admin, and the blog articles | Cloudflare KV namespace `yancheinu-content` | Same account |
+| Visitor counts | Cloudflare D1 database `yancheinu-stats` | Same account |
+| The /admin password | A Cloudflare secret on the Worker (`ADMIN_PASSWORD`) | Mrs. Eisenbach knows it; Abraham keeps a copy |
 | Booking calendars | Cal.com — `yancheinu-coaching-by-simy-eisenbach-bxlkyj` | **Mrs. Eisenbach's own account** |
 | Contact form delivery | FormSubmit → yancheinucoaching@gmail.com | Her email |
 | Newsletter | MailerLite | **Her own account** |
@@ -51,8 +54,22 @@ Pushing to `main` on GitHub triggers a Cloudflare build that runs
 a copy of the repository with the same command.
 
 Everything the deploy needs — `wrangler.jsonc`, the Worker code in `worker/`, the
-static files — is committed. There is no hidden build step and no secret key. The
-chat uses Cloudflare's own AI binding, so there is no API key to lose.
+static files — is committed. There is no hidden build step. The chat uses
+Cloudflare's own AI binding, so there is no API key to lose.
+
+**Since October 2026 the site has a back end (yancheinu.com/admin), and two things
+now live in Cloudflare rather than in the repository:**
+
+- **Her edits and her blog.** Wording she changes in /admin and every blog article
+  are stored in the KV namespace `yancheinu-content`. A fresh deploy to another
+  account would show the pages as written in the repository and an empty blog,
+  until that storage is copied across
+  (`npx wrangler kv key list --namespace-id 0095bd453c38481bbca15bd062bc0332 --remote`
+  lists it; each `post:…` key is one article).
+- **Two secrets**, set once with `npx wrangler secret put`: `ADMIN_PASSWORD` (the
+  /admin password) and `SESSION_SECRET` (any long random text). On a new account
+  both are simply chosen again. The visitor database is created from
+  `worker/schema.sql`.
 
 ---
 

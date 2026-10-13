@@ -482,6 +482,40 @@ strong{color:var(--ink);font-weight:800}
 }
 
 /* ============================================================
+   blog — the list on blog.html and the article pages (written in /admin)
+   ============================================================ */
+/* flex, not grid: one or two articles sit centred instead of hugging the left */
+.blog-list{display:flex;flex-wrap:wrap;justify-content:center;margin:-14px}
+.blog-list:empty{margin:0}
+.blog-list .post-card{flex:1 1 300px;max-width:372px;margin:14px;display:flex;flex-direction:column;align-items:flex-start}
+.post-card__tag{display:inline-block;font-size:.74rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--sage);margin-bottom:10px}
+.post-card__draft{display:inline-block;background:#FFF1DE;color:#8A4A12;border-radius:999px;padding:2px 12px;font-size:.76rem;font-weight:800;margin-bottom:10px}
+.post-card h3 a{color:var(--forest-deep)}
+.post-card h3 a:hover{color:var(--autumn)}
+.post-card__date{font-size:.88rem!important;color:var(--sage);margin:-4px 0 10px}
+.post-card .more{margin-top:auto;padding-top:16px}
+.blog-empty{text-align:center;font-size:1.08rem;max-width:46ch;margin:0 auto}
+.blog-empty a{font-weight:800;text-decoration:underline;text-underline-offset:3px}
+
+.pagehero--post h1{font-size:clamp(1.9rem,4.2vw,3rem)}
+.post-meta{font-size:.98rem!important;color:#D6E3D3!important;letter-spacing:.02em}
+.post{font-size:1.09rem;line-height:1.85}
+.post p{color:var(--ink);margin:0 0 1.2em}
+.post h2{font-size:clamp(1.45rem,2.6vw,1.95rem);margin:1.7em 0 .55em}
+.post h3{font-size:1.28rem;margin:1.5em 0 .45em}
+.post ul,.post ol{margin:0 0 1.2em 1.35em;color:var(--ink)}
+.post li{margin:.4em 0;padding-left:.2em}
+.post li::marker{color:var(--autumn)}
+.post blockquote{margin:1.6em 0;padding:.3em 0 .3em 1.2em;border-left:3px solid var(--autumn);font-family:'Fraunces',Georgia,serif;font-style:italic;font-size:1.22rem;line-height:1.6;color:var(--forest)}
+.post a{font-weight:800;text-decoration:underline;text-underline-offset:3px}
+.post>:first-child{margin-top:0}
+.post-back{margin-top:44px;font-weight:800}
+.draftnote{background:#FFF1DE;border:1px solid var(--autumn-soft);border-radius:14px;padding:12px 18px;margin-bottom:30px;color:var(--ink);font-size:.98rem}
+
+/* a bold line inside the dark invitation band */
+.cta p strong{color:#F7F3E8}
+
+/* ============================================================
    chat — receptionist widget, injected by site.js on every page
    ============================================================ */
 .chat-fab{

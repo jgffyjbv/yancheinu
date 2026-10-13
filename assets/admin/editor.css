@@ -1,0 +1,50 @@
+/* Editing bar and in-place text editing, shown only to the signed-in owner. */
+#yn-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 9999; display: flex; flex-wrap: wrap; align-items: center; padding: 10px 16px; background: #142E21; color: #C2D3C3; font: 15px/1.4 -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; box-shadow: 0 -8px 24px rgba(0, 0, 0, .28); text-align: left; }
+#yn-bar > * { margin: 4px 10px 4px 0; }
+.yn-bar__who { color: #A9BFA9; }
+.yn-bar__status { color: #fff; font-weight: 700; }
+.yn-bar__status.err { color: #ffb4a2; }
+.yn-btn { font: inherit; font-size: 14.5px; line-height: 1.3; cursor: pointer; text-decoration: none; display: inline-block; padding: 9px 18px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, .5); background: transparent; color: #fff; }
+.yn-btn:hover { background: rgba(255, 255, 255, .14); color: #fff; }
+.yn-btn--main { background: #C9702E; border-color: #C9702E; color: #fff; font-weight: 700; }
+.yn-btn--main:hover { background: #dd8440; color: #fff; }
+.yn-btn[hidden] { display: none; }
+.yn-s { display: none; }
+body.yn-has-bar { padding-bottom: 76px; }
+/* the chat button and its window sit above the bar instead of under it */
+body.yn-has-bar .chat-fab { bottom: 96px; }
+body.yn-has-bar .chat-panel { bottom: 90px; }
+body.yn-editing [data-e] { outline: 1px dashed rgba(201, 112, 46, .95); outline-offset: 4px; border-radius: 3px; cursor: text; min-width: 1em; }
+body.yn-editing span[data-e] { display: inline-block; }
+body.yn-editing [data-e]:hover { outline-style: solid; background: rgba(201, 112, 46, .12); }
+body.yn-editing [data-e]:focus { outline: 2px solid #C9702E; background: rgba(201, 112, 46, .16); }
+body.yn-editing [data-e].yn-changed { outline-color: #2e8b57; outline-style: solid; }
+body.yn-editing button [data-e], body.yn-editing button[data-e] { cursor: pointer; }
+/* everything on the page must be reachable while editing */
+body.yn-editing .reveal { opacity: 1 !important; transform: none !important; }
+body.yn-editing .hero__pasuk { display: block !important; }
+body.yn-editing main [hidden] { display: block !important; }
+body.yn-editing .chat-fab, body.yn-editing .chat-panel { display: none !important; }
+#yn-seo { border: 0; border-radius: 14px; padding: 0; max-width: 560px; width: calc(100% - 32px); box-shadow: 0 30px 80px rgba(0, 0, 0, .4); font: 16px/1.5 -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; color: #26382C; }
+#yn-seo::backdrop { background: rgba(20, 46, 33, .55); }
+#yn-seo form { padding: 26px 28px; margin: 0; }
+#yn-seo h2 { font: 600 24px/1.2 Georgia, serif; margin: 0 0 6px; color: #142E21; }
+#yn-seo p { margin: 0 0 14px; color: #5D6E60; font-size: 15px; }
+#yn-seo label { display: block; font-size: 13px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #5D6E60; margin: 16px 0 6px; }
+#yn-seo input, #yn-seo textarea { width: 100%; box-sizing: border-box; font: inherit; padding: 11px 13px; border: 1px solid #8FAE94; border-radius: 10px; }
+#yn-seo textarea { min-height: 96px; resize: vertical; }
+#yn-seo .yn-count { font-size: 13px; color: #5D6E60; margin-top: 4px; }
+#yn-seo .yn-row { display: flex; justify-content: flex-end; margin-top: 20px; }
+#yn-seo .yn-row button { font: inherit; font-size: 15px; border-radius: 999px; padding: 9px 20px; cursor: pointer; margin-left: 10px; border: 1px solid #26382C; background: #fff; color: #26382C; }
+#yn-seo .yn-row button.go { background: #C9702E; border-color: #C9702E; color: #fff; font-weight: 700; }
+@media (max-width: 720px) {
+  body.yn-has-bar { padding-bottom: 120px; }
+  body.yn-has-bar .chat-fab { bottom: 132px; }
+  .yn-bar__who, .yn-l { display: none; }
+  .yn-s { display: inline; }
+  #yn-bar { padding: 8px 10px; font-size: 14px; }
+  #yn-bar > * { margin: 3px 6px 3px 0; }
+  .yn-btn { padding: 8px 13px; font-size: 14px; }
+  .yn-bar__status { flex: 1 1 100%; }
+}
+@media print { #yn-bar { display: none; } }
