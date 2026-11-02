@@ -5,7 +5,8 @@ coaching, Boro Park). No framework and no build step: every page is a complete
 HTML file, and they all share `assets/site.css` and `assets/site.js`.
 
 Pages: `index` · `about` · `services` · `kallahs` · `book` · `contact` · `thanks` ·
-`calm-before-a-meeting` (the free guide) · `blog` (the frame for the blog — see below).
+`guides` (the Free Guides index) · `calm-before-a-meeting` and `support-without-taking-over`
+(the two free guides) · `blog` (the frame for the blog — see below).
 
 A small Worker (`worker/`) sits in front of the pages. It adds the chat, the
 owner's **/admin** screens, the blog and the visitor count. Read "The back end"
@@ -153,10 +154,11 @@ line is shown instead.
 
 ---
 
-## The free guide and its PDF
+## The free guides and their PDFs
 
-`calm-before-a-meeting.html` is *also* the source of the downloadable PDF —
-there is no separate document. A `@media print` block at the bottom of `site.css`
+Each guide page is *also* the source of its downloadable PDF — there is no separate
+document: `calm-before-a-meeting.html` → `assets/yancheinu-3-ways-to-stay-calm.pdf`,
+`support-without-taking-over.html` → `assets/yancheinu-support-without-taking-over.pdf`. A `@media print` block at the bottom of `site.css`
 restyles the page into the handout.
 
 **After editing the guide, regenerate the PDF** (the same applies after the guide's
@@ -171,11 +173,17 @@ python3 -m http.server 8080 &
   "http://127.0.0.1:8080/calm-before-a-meeting.html"
 ```
 
+(For the other guide, swap both file names.) Each PDF should come out at two pages;
+the parents guide prints its chapters two-across (`grid--chapters`) to stay at two.
+
 Then open the PDF and look at it before pushing.
 
-More guides are planned. When the second one arrives, build a `guides.html` index
-and point the nav at it — the existing article keeps its URL that way, so anything
-already shared still works.
+**She wants guides to be "Free Guides", not blog posts** — "I think it attracts" (Nov 2026).
+The menu's "Free Guides" opens `guides.html`, which lists every guide, newest first. To add
+a guide: copy `support-without-taking-over.html`, keep the "Free bonus guide · For …"
+eyebrow and both Download buttons, render its PDF as above, add a card for it at the top of
+`guides.html`, add it to `sitemap.xml`, and add one line about it to the facts in
+`worker/chat.js` (the "WHAT YOU KNOW" part, not the rules).
 
 ---
 

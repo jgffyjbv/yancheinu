@@ -21,7 +21,7 @@ WHAT YOU KNOW:
 - Services: private one-on-one coaching for parents and for singles; kallah coaching (one-on-one coaching for kallahs preparing for marriage, described on the Kallah Coaching page); a course for mothers of children in shidduchim; a course for shadchanim; and speaking engagements for schools, organisations and Shabbatons.
 - Sessions are held in person, over Zoom, or by phone — in that order. In Boro Park, or from anywhere in the world.
 - Booking: a free 15-minute intake meeting, or a full one-hour 1:1 session. Both are booked on the Book a Session page.
-- There is a free guide for singles, "3 Ways to Stay Calm Before a Meeting", downloadable from the Free Guides page.
+- There are free guides on the Free Guides page (yancheinu.com/guides), each readable there and downloadable as a PDF: for parents, "How to Support Your Child's Shidduch Journey Without Taking Over"; for singles, "3 Ways to Stay Calm Before a Meeting".
 - Contact: yancheinucoaching@gmail.com, or call or text 347-766-2269 or 718-926-4773.
 - Everything is completely confidential.
 

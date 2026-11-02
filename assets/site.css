@@ -292,6 +292,15 @@ strong{color:var(--ink);font-weight:800}
 .pinlist--notes{gap:24px}
 .pinlist--notes li strong{display:block;color:var(--ink);font-weight:800}
 .pinlist__note{display:block;margin-top:3px;font-size:.97rem;font-style:italic;color:var(--sage)}
+/* guides: the reflection question under a chapter, and lines to write on in an exercise */
+.card__reflect{margin-top:14px;padding-top:12px;border-top:1px dashed var(--line);font-style:italic;color:var(--forest)}
+.card__reflect strong{font-style:normal;font-weight:800;color:var(--autumn);margin-right:2px}
+.pinlist__line{display:block;margin-top:22px;border-bottom:1.5px dashed var(--sage);opacity:.55}
+.guide-card{display:flex;flex-direction:column}
+.guide-card .eyebrow{margin-bottom:12px}
+.guide-card h3 a{color:inherit;text-decoration:none}
+.guide-card h3 a:hover{color:var(--forest)}
+.guide-card .hero__actions{margin-top:auto;padding-top:20px}
 
 /* statement */
 .statement{max-width:780px;margin:0 auto;text-align:center}
@@ -648,6 +657,10 @@ strong{color:var(--ink);font-weight:800}
   .pinlist--notes{gap:4mm}
   .pinlist li{font-size:10.5pt;break-inside:avoid;page-break-inside:avoid}
   .pinlist__note{font-size:9.5pt}
+  .card__reflect{font-size:10pt;margin-top:8px;padding-top:7px}
+  .grid--chapters{grid-template-columns:1fr 1fr}
+  .pinlist--write li{break-inside:avoid;page-break-inside:avoid}
+  .pinlist__line{margin-top:9mm;opacity:1}
 
   .statement .serif{font-size:14pt}
   .badge{font-size:9pt;padding:5px 14px}
