@@ -63,6 +63,7 @@ cards on `services.html`, and the Kallah set appears again on `kallahs.html`.
 
 Mrs. Eisenbach signs in at **yancheinu.com/admin** with one password. From there she can:
 
+- **read every message sent from the Contact page** (Messages);
 - **change the wording of any page** — click a sentence on the page itself and type;
 - **write the blog** — drafts, publish, take offline;
 - **see her visitors** — per day, per page, where they came from.
@@ -99,11 +100,35 @@ Also:
   never be added to it.
 - The Worker code is split by job: `index.js` (routing, serving pages), `pages.js`
   (finding and replacing wording), `blog.js`, `stats.js` (visitors), `admin.js`
-  (the /admin screens), `chat.js`. The browser side of the editor is in
+  (the /admin screens), `chat.js`, `contact.js` (the Contact page's form).
+- The blog's "Who is it for" choices are the `AUDIENCES` list in `worker/blog.js`.
+  "For mothers" was renamed "For parents" at her request; `audienceOf()` shows old
+  articles under the new name, so a renamed choice needs an entry in `RENAMED` there. The browser side of the editor is in
   `assets/admin/`.
 - A private test copy can be deployed with
   `npx wrangler deploy --config wrangler.staging.jsonc`
   (yancheinu-staging.avrumy95.workers.dev, separate storage).
+
+---
+
+## The contact form
+
+The form on `contact.html` posts to the website itself (`/api/contact`, handled by
+`worker/contact.js`). Every message is **saved in the site's database first** (D1 table
+`messages`) and then emailed to yancheinucoaching@gmail.com from
+`website@notify.yancheinu.com` (Cloudflare Email Sending). She sees every message in
+/admin → Messages, with whether its email went out, and can send herself a test email
+from there.
+
+- **Do not point the form at FormSubmit or any other outside service again.** Until
+  Nov 2026 it went to FormSubmit, which kept no record here; when she asked why
+  visitors reached the thank-you page but no messages arrived, nothing could be checked.
+- Keep the field names (`name`, `phone`, `email`, `interest`, `message`, and the hidden
+  `hp_y5` that only robots fill in). Adding a choice to "I'm interested in" needs no
+  other change.
+- Messages that look like advertising (links, SEO pitches, foreign scripts other than
+  Hebrew) are kept but not emailed — they appear under Messages → "set aside".
+  Hebrew and Yiddish are never treated as a warning sign.
 
 ---
 

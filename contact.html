@@ -85,12 +85,9 @@
       <div class="form-card reveal">
         <h2>Send a confidential message</h2>
         <p>A sentence or two is all it takes &mdash; Mrs. Eisenbach will take it from there.</p>
-        <form action="https://formsubmit.co/yancheinucoaching@gmail.com" method="POST">
-          <input type="hidden" name="_subject" value="New inquiry — Yancheinu website">
-          <input type="hidden" name="_template" value="table">
-          <input type="hidden" name="_captcha" value="false">
-          <input type="hidden" name="_next" value="https://yancheinu.com/thanks.html">
-          <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <!-- Sent to the website itself (worker/contact.js): saved first, then emailed to Mrs. Eisenbach. Keep the field names. -->
+        <form action="/api/contact" method="POST">
+          <input type="text" name="hp_y5" style="display:none" tabindex="-1" autocomplete="one-time-code" aria-hidden="true">
           <div class="field">
             <label for="name">Name</label>
             <input type="text" id="name" name="name" autocomplete="name" required>

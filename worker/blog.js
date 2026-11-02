@@ -7,13 +7,16 @@
  */
 import { esc, plain, kvJson } from './lib.js';
 
-export const AUDIENCES = ['For everyone', 'For mothers', 'For singles', 'For kallahs', 'For shadchanim'];
+export const AUDIENCES = ['For everyone', 'For parents', 'For singles', 'For kallahs', 'For shadchanim'];
+// "For mothers" became "For parents" in Nov 2026 (her request); articles saved before that still say mothers.
+const RENAMED = { 'For mothers': 'For parents' };
+export const audienceOf = (a) => RENAMED[a] || (AUDIENCES.includes(a) ? a : AUDIENCES[0]);
 const SITE = 'https://yancheinu.com';
 
 // Every article has its OWN key, so saving one can never overwrite another. (KV reads can be up to a minute
 // stale; with one shared value a second save could silently undo the first.)
 export const getPost = (env, slug) => kvJson(env, 'post:' + slug);
-export const postMeta = (p) => ({ slug: p.slug, title: p.title, audience: p.audience, teaser: p.teaser, status: p.status, published: p.published || '', updated: p.updated || '' });
+export const postMeta = (p) => ({ slug: p.slug, title: p.title, audience: audienceOf(p.audience), teaser: p.teaser, status: p.status, published: p.published || '', updated: p.updated || '' });
 export const getIndex = async (env) => (await kvJson(env, 'posts:index')) || { items: [] };
 // The list is derived from the articles themselves and rebuilt whenever the owner opens the Blog screen,
 // so it can always be repaired.
@@ -40,7 +43,7 @@ export const fmtDate = (d) => { try { return new Date(d + 'T12:00:00Z').toLocale
 const ARROW = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
 
 const card = (p, admin) => `<article class="card post-card">
-        <span class="post-card__tag">${esc(p.audience || AUDIENCES[0])}</span>${admin && p.status !== 'published' ? '<span class="post-card__draft">Draft &ndash; only you can see this</span>' : ''}
+        <span class="post-card__tag">${esc(audienceOf(p.audience))}</span>${admin && p.status !== 'published' ? '<span class="post-card__draft">Draft &ndash; only you can see this</span>' : ''}
         <h3><a href="/blog/${esc(p.slug)}">${esc(p.title)}</a></h3>
         ${p.status === 'published' && p.published ? `<p class="post-card__date"><time datetime="${esc(p.published)}">${fmtDate(p.published)}</time></p>` : ''}
         <p>${esc(p.teaser || '')}</p>
@@ -63,7 +66,7 @@ export function postPage(shell, post, index, admin) {
   const title = post.title.length > 48 ? post.title : `${post.title} | Yancheinu`;
   const desc = post.description || post.teaser || '';
   const others = published(index).filter((p) => p.slug !== post.slug);
-  const related = [...others.filter((p) => p.audience === post.audience), ...others.filter((p) => p.audience !== post.audience)].slice(0, 3);
+  const related = [...others.filter((p) => audienceOf(p.audience) === audienceOf(post.audience)), ...others.filter((p) => audienceOf(p.audience) !== audienceOf(post.audience))].slice(0, 3);
 
   const ld = live ? `<script type="application/ld+json">${JSON.stringify({
     '@context': 'https://schema.org', '@type': 'BlogPosting', headline: post.title, description: desc, url,
@@ -79,7 +82,7 @@ export function postPage(shell, post, index, admin) {
   <div class="pagehero__scrim" aria-hidden="true"></div>
   <div class="wrap">
     <div class="reveal in">
-      <span class="eyebrow" style="justify-content:center">${esc(post.audience || AUDIENCES[0])}</span>
+      <span class="eyebrow" style="justify-content:center">${esc(audienceOf(post.audience))}</span>
       <h1>${esc(post.title)}</h1>
       ${live && post.published ? `<p class="post-meta">By Mrs. Simy Eisenbach &middot; <time datetime="${esc(post.published)}">${fmtDate(post.published)}</time></p>` : '<p class="post-meta">By Mrs. Simy Eisenbach</p>'}
     </div>

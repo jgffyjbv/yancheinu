@@ -1,6 +1,6 @@
 {
   // The website: the HTML pages in this folder, served by one small Worker (worker/index.js) that adds
-  // the receptionist chat, the owner's /admin screens, the blog and the visitor count.
+  // the receptionist chat, the Contact page's form, the owner's /admin screens, the blog and the visitor count.
   // Deploy with:  npx wrangler deploy   (a push to main does this too)
   "name": "yancheinu",
   "main": "worker/index.js",
@@ -16,9 +16,14 @@
   "ai": {
     "binding": "AI"
   },
+  // Messages from the Contact page are emailed with Cloudflare Email Sending, from the notify.yancheinu.com
+  // subdomain (set up Nov 2026 with `npx wrangler email sending enable notify.yancheinu.com`; the main domain's
+  // own mail records are untouched). Every message is also kept in the database below.
+  "send_email": [{ "name": "EMAIL" }],
+  "vars": { "CONTACT_TO": "yancheinucoaching@gmail.com", "MAIL_FROM": "website@notify.yancheinu.com" },
   // What the owner saves in /admin: her wording for each page, and the blog articles.
   "kv_namespaces": [{ "binding": "CONTENT", "id": "0095bd453c38481bbca15bd062bc0332" }],
-  // Visitor counts and the wrong-password counter. Tables: worker/schema.sql
+  // Visitor counts, the Contact page's messages and the wrong-password counter. Tables: worker/schema.sql
   "d1_databases": [{ "binding": "DB", "database_name": "yancheinu-stats", "database_id": "31aa5270-c517-4d92-94e4-05fefc58367c" }],
   "observability": { "enabled": true }
   // Two secrets are set once with `npx wrangler secret put <NAME>` and are NOT in this repository:

@@ -1,14 +1,16 @@
 /**
- * /admin — the owner's side of the website: change wording on any page, write the blog, see the visitors.
+ * /admin — the owner's side of the website: read the messages from the Contact page, change wording on any
+ * page, write the blog, see the visitors.
  *
  * One password (the ADMIN_PASSWORD secret), a signed cookie, nothing else. Every screen here is "noindex".
  */
 import { DAY, esc, clean, secure, json, hmac, same, plain, field, cleanInline, cleanBlocks, slugify, kvJson, kvStrict, signedIn, sign, cookie, sameOrigin, assetText, pagePath } from './lib.js';
 import { unitsFor, readSeo } from './pages.js';
-import { AUDIENCES, getPost, postMeta, rebuildIndex, published, drafts } from './blog.js';
+import { AUDIENCES, audienceOf, getPost, postMeta, rebuildIndex, published, drafts } from './blog.js';
+import { notify } from './contact.js';
 import { report, strikes, strike, today } from './stats.js';
 
-export const ADMIN_VERSION = '1';
+export const ADMIN_VERSION = '2';
 const LOGIN_TRIES = 8;
 const SUPPORT = { label: 'bhwebs.com/support', href: 'https://bhwebs.com/support' };
 
@@ -104,11 +106,13 @@ table.list td{padding:8px 4px;border-top:1px solid #EFE8D8;vertical-align:top}ta
 table.list td.n{text-align:right;font-weight:700;white-space:nowrap;width:5em}
 table.list .bar{display:block;height:5px;border-radius:3px;background:#C2D3C3;margin-top:5px}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.msgtext{white-space:pre-wrap;overflow-wrap:anywhere;margin:12px 0 10px;font-size:16.5px}
+.mail-ok{color:#1E4230}.mail-bad{color:#a4452e;font-weight:700}
 @media (max-width:720px){.top{padding:10px 14px}.top nav a{padding:6px 9px;font-size:14px}main{padding:22px 16px 80px}.two{grid-template-columns:1fr}.chart i{margin:0 1px}}
 `;
 const html = (title, body) => new Response(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>${esc(title)} · Yancheinu</title><link rel="icon" type="image/svg+xml" href="/favicon.svg"><style>${ADMIN_CSS}</style></head>${body}</html>`, { headers: secure({ 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' }) });
 
-const NAV = [['/admin', 'Start'], ['/admin/pages', 'Pages'], ['/admin/blog', 'Blog'], ['/admin/visitors', 'Visitors']];
+const NAV = [['/admin', 'Start'], ['/admin/messages', 'Messages'], ['/admin/pages', 'Pages'], ['/admin/blog', 'Blog'], ['/admin/visitors', 'Visitors']];
 function shell(title, active, body, { page = '', data = null } = {}) {
   return html(title, `<body data-page="${esc(page)}"><div class="top"><div><strong>Yancheinu · website</strong><nav>${NAV.map(([href, label]) => `<a href="${href}"${href === active ? ' class="on"' : ''}>${label}</a>`).join('')}<a href="/" target="_blank" rel="noopener">View the website ↗</a></nav></div><form method="post" action="/admin/logout"><button>Sign out</button></form></div><main>${body}</main>${data ? `<script type="application/json" id="data">${JSON.stringify(data).replace(/</g, '\\u003c')}</script>` : ''}<script src="/assets/admin/admin.js?v=${ADMIN_VERSION}" defer></script></body>`);
 }
@@ -162,6 +166,50 @@ async function visitorsPage(env) {
     <p class="meta">Nothing personal is stored: no names, no addresses, no cookies. To see how an advertisement is doing, give it its own link ending in <b>?utm_source=</b> and a name, for example <b>yancheinu.com/kallahs?utm_source=kallah-ad</b> — it then appears by that name under "Where visitors came from".</p>`, { page: 'visitors' });
 }
 
+/* ------------------------------ messages ------------------------------ */
+const when = (ms) => { try { return new Date(ms).toLocaleString('en-US', { timeZone: 'America/New_York', weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }); } catch (e) { return ''; } };
+function mailNote(m) {
+  const status = String(m.mail || '');
+  if (m.spam) return '<p class="meta">Not emailed to you: it looked like advertising or a robot.</p>';
+  if (status === 'sent') return '<p class="meta mail-ok">✓ Emailed to you</p>';
+  // still "sending" after ten minutes means the email's outcome was never recorded — treat it as not delivered
+  if (status === 'sending' && Date.now() - m.at < 600000) return '<p class="meta">Being emailed to you…</p>';
+  if (status === 'sending') return '<p class="meta mail-bad">It is not known whether this was emailed to you — this page is your copy.</p>';
+  return `<p class="meta mail-bad">This message was not emailed to you${status.startsWith('not emailed: ') ? ' (' + esc(status.slice(13)) + ')' : ''} — this page is your copy.</p>`;
+}
+async function messagesPage(env, showSpam) {
+  let list = [];
+  let spamCount = 0;
+  let ok = !!env.DB;
+  if (ok) {
+    try {
+      const [rows, count] = await env.DB.batch([
+        env.DB.prepare('SELECT id, at, name, email, phone, interest, message, spam, mail FROM messages WHERE spam = ? ORDER BY at DESC LIMIT 300').bind(showSpam ? 1 : 0),
+        env.DB.prepare('SELECT COUNT(*) AS n FROM messages WHERE spam = 1'),
+      ]);
+      list = rows.results;
+      spamCount = (count.results[0] && count.results[0].n) || 0;
+    } catch (e) { ok = false; }
+  }
+  if (!ok) return shell('Messages', '/admin/messages', '<h1>Messages</h1><p class="help err">The messages could not be read just now. Please try again in a minute.</p>', { page: 'messages' });
+  const box = (m) => {
+    const tel = String(m.phone || '').replace(/[^\d+]/g, '');
+    const reach = [`<a href="mailto:${esc(m.email)}">${esc(m.email)}</a>`, m.phone ? (tel ? `<a href="tel:${esc(tel)}">${esc(m.phone)}</a>` : esc(m.phone)) : ''].filter(Boolean).join(' · ');
+    return `<div class="box"><div class="row" style="justify-content:space-between;align-items:baseline"><p class="who" dir="auto">${esc(m.name)}</p><p class="meta" style="margin:0">${esc(when(m.at))}</p></div>
+      <p class="meta" style="margin:4px 0 0">${m.interest ? `<span class="tag">${esc(m.interest)}</span>` : ''}${reach}</p>
+      ${m.message ? `<p class="msgtext" dir="auto">${esc(m.message)}</p>` : '<p class="meta" style="margin:12px 0 10px"><i>No message was written — only the details above.</i></p>'}
+      ${mailNote(m)}</div>`;
+  };
+  const to = env.CONTACT_TO ? esc(env.CONTACT_TO) : 'your email';
+  const top = showSpam
+    ? `<h1>Set aside</h1><p class="help">These looked like advertising or were sent by a robot, so they were <b>not</b> emailed to you. They are kept here in case a real message was caught by mistake.</p><p><a href="/admin/messages">← Back to your messages</a></p>`
+    : `<h1>Messages</h1><p class="help">Everything people send from the <a href="/contact" target="_blank" rel="noopener">Contact page</a>, newest first. Each message is also emailed to <b>${to}</b> — and kept here even if that email ever fails. Press an email address to answer.</p>
+       <div class="row"><button class="act" data-test-mail>Send me a test email</button><span class="status" id="status" role="status"></span></div>`;
+  const empty = showSpam ? '<p class="empty">Nothing has been set aside.</p>' : '<p class="empty">No messages yet. When someone uses the Contact page, the message appears here.</p>';
+  const foot = !showSpam && spamCount ? `<p class="meta" style="margin-top:22px"><a href="/admin/messages?spam=1">Show ${spamCount} ${spamCount === 1 ? 'message' : 'messages'} set aside as advertising →</a></p>` : '';
+  return shell('Messages', '/admin/messages', top + (list.length ? list.map(box).join('') : empty) + foot, { page: 'messages' });
+}
+
 /* ------------------------------ screens ------------------------------ */
 export async function admin(request, env, url) {
   const origin = url.origin;
@@ -201,6 +249,7 @@ export async function admin(request, env, url) {
   }
 
   if (path === '/admin/visitors') return visitorsPage(env);
+  if (path === '/admin/messages') return messagesPage(env, url.searchParams.get('spam') === '1');
 
   if (path === '/admin/pages') {
     const pages = await sitePages(env, origin);
@@ -221,7 +270,7 @@ export async function admin(request, env, url) {
 
   if (path === '/admin/blog') {
     const index = await rebuildIndex(env);
-    const rows = [...drafts(index), ...published(index)].map((p) => `<div class="box"><div class="row" style="justify-content:space-between"><div><p class="who">${esc(p.title)}</p><p class="meta" style="margin:0"><span class="tag${p.status === 'published' ? ' live' : ''}">${p.status === 'published' ? 'Published' : 'Draft'}</span>${esc(p.audience || '')}${p.published ? ' · published ' + esc(longDay(p.published)) : ''}</p></div><div class="row" style="margin:0"><a class="act main" href="/admin/blog/edit?slug=${encodeURIComponent(p.slug)}">Edit</a><a class="act" href="/blog/${esc(p.slug)}" target="_blank" rel="noopener">View</a></div></div></div>`).join('');
+    const rows = [...drafts(index), ...published(index)].map((p) => `<div class="box"><div class="row" style="justify-content:space-between"><div><p class="who">${esc(p.title)}</p><p class="meta" style="margin:0"><span class="tag${p.status === 'published' ? ' live' : ''}">${p.status === 'published' ? 'Published' : 'Draft'}</span>${esc(audienceOf(p.audience))}${p.published ? ' · published ' + esc(longDay(p.published)) : ''}</p></div><div class="row" style="margin:0"><a class="act main" href="/admin/blog/edit?slug=${encodeURIComponent(p.slug)}">Edit</a><a class="act" href="/blog/${esc(p.slug)}" target="_blank" rel="noopener">View</a></div></div></div>`).join('');
     return shell('Blog', '/admin/blog', `<h1>Blog</h1><p class="help">A <b>draft</b> is visible only to you while you are signed in. A <b>published</b> article appears on the Blog page for everyone and is added to the list Google reads. The word "Blog" appears in the website's menu by itself as soon as your first article is published.</p><p><a class="act main" href="/admin/blog/edit">Write a new article</a></p>${rows || '<p class="empty">No articles yet. Press "Write a new article" to begin.</p>'}`, { page: 'blog' });
   }
 
@@ -235,7 +284,7 @@ export async function admin(request, env, url) {
     return shell(p.slug ? 'Edit article' : 'New article', '/admin/blog', `<p><a href="/admin/blog">← All articles</a></p><h1>${p.slug ? 'Edit article' : 'New article'}</h1>
       <p class="meta"><span class="tag${live ? ' live' : ''}">${live ? 'Published' : 'Draft'}</span>${address}</p>
       <label for="f-title">Title</label><input type="text" id="f-title" maxlength="140" value="${esc(p.title)}">
-      <label for="f-audience">Who is it for</label><select id="f-audience">${AUDIENCES.map((t) => `<option${t === p.audience ? ' selected' : ''}>${esc(t)}</option>`).join('')}</select>
+      <label for="f-audience">Who is it for</label><select id="f-audience">${AUDIENCES.map((t) => `<option${t === audienceOf(p.audience) ? ' selected' : ''}>${esc(t)}</option>`).join('')}</select>
       <label for="f-teaser">Summary <small>– one or two lines, shown on the Blog page under the title</small></label><textarea id="f-teaser" maxlength="300" style="min-height:64px">${esc(p.teaser)}</textarea>
       <label id="l-body">Article</label>
       <div class="rte-bar" id="rte-bar"><button type="button" data-cmd="formatBlock" data-arg="h2">Heading</button><button type="button" data-cmd="formatBlock" data-arg="h3">Small heading</button><button type="button" data-cmd="formatBlock" data-arg="p">Normal text</button><button type="button" data-cmd="bold"><b>Bold</b></button><button type="button" data-cmd="italic"><i>Italic</i></button><button type="button" data-cmd="insertUnorderedList">• List</button><button type="button" data-cmd="insertOrderedList">1. List</button><button type="button" data-cmd="formatBlock" data-arg="blockquote">Quote</button><button type="button" data-cmd="link">Link</button><button type="button" data-cmd="unlink">Remove link</button></div>
@@ -252,6 +301,7 @@ export async function admin(request, env, url) {
     ${r.ok ? `<h2 style="margin-top:8px">Visitors</h2>${tiles(r)}<p class="meta"><a href="/admin/visitors">See the chart, the most-read pages and where visitors came from →</a></p>` : ''}
     <h2>Edit</h2>
     <div class="cards">
+      <a href="/admin/messages"><b>Messages</b><span>Everything people send from the Contact page.</span></a>
       <a href="/admin/pages"><b>Change the text on a page</b><span>Open any page, click a sentence and type.</span></a>
       <a href="/admin/blog"><b>Blog</b><span>Write, edit and publish articles.</span></a>
       <a href="/admin/visitors"><b>Visitors</b><span>How many people came, and what they read.</span></a>
@@ -263,6 +313,7 @@ export async function admin(request, env, url) {
       <li>The menu and the footer are the same on every page: change them once, on any page.</li>
       <li>Blog: write a new article, save it as a draft, press View to check it, then Publish.</li>
       <li>Everything you save appears for visitors within about a minute.</li>
+      <li>Messages from the Contact page are emailed to you and also kept under Messages, so none can get lost.</li>
       <li>For a new section, a photo, a phone number or link, or a design change, send a request at ${help}.</li>
     </ol></div>`, { page: 'start' });
   }
@@ -277,6 +328,14 @@ async function adminAction(request, env, { path, origin }) {
   const tooLong = Number(request.headers.get('content-length')) > 200000;
   const body = tooLong ? null : await readJson(request);
   if (!body) return json({ ok: false, message: tooLong ? 'That is too long to save in one piece. Please shorten it, or split it into two articles.' : 'Nothing was received. Please try again.' }, tooLong ? 413 : 400);
+
+  if (path === '/admin/api/test-mail') {
+    // a handful an hour is plenty for checking; the email allowance is shared with other websites
+    if ((await strikes(env, 'test-mail')) >= 6) return json({ ok: false, message: 'Several test emails were sent in the last hour. Please check your inbox, and the Spam folder, before sending another.' }, 429);
+    await strike(env, 'test-mail', 3600);
+    const r = await notify(env, null, { test: true });
+    return r.ok ? json({ ok: true, message: `Sent. It should be in ${env.CONTACT_TO} within a minute or two — if not, look in the Spam folder.` }) : json({ ok: false, message: 'The test email did not go out: ' + r.note }, 502);
+  }
 
   if (path === '/admin/api/page-reset') {
     if (body.path === '*shared*') { await env.CONTENT.delete('shared'); return json({ ok: true }); }
@@ -350,7 +409,7 @@ async function adminAction(request, env, { path, origin }) {
     const next = {
       slug: cur ? cur.slug : '',
       title,
-      audience: AUDIENCES.includes(body.audience) ? body.audience : AUDIENCES[0],
+      audience: audienceOf(body.audience),
       teaser: field(body.teaser, 300),
       description: field(body.description, 320),
       body: cleanBlocks(body.body),

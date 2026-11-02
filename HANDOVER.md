@@ -33,7 +33,7 @@ point of failure worth planning around.
 | Visitor counts | Cloudflare D1 database `yancheinu-stats` | Same account |
 | The /admin password | A Cloudflare secret on the Worker (`ADMIN_PASSWORD`) | Mrs. Eisenbach knows it; Abraham keeps a copy |
 | Booking calendars | Cal.com — `yancheinu-coaching-by-simy-eisenbach-bxlkyj` | **Mrs. Eisenbach's own account** |
-| Contact form delivery | FormSubmit → yancheinucoaching@gmail.com | Her email |
+| Contact form messages | Saved in the D1 database `yancheinu-stats` (table `messages`, shown in /admin → Messages) and emailed to yancheinucoaching@gmail.com from `notify.yancheinu.com` via Cloudflare Email Sending — replaced FormSubmit in Nov 2026 | Same Cloudflare account; the inbox is hers |
 | Newsletter | MailerLite | **Her own account** |
 
 Useful identifiers (not secrets):

@@ -1,4 +1,5 @@
--- The website's small database (Cloudflare D1): visitor counts and the wrong-password counter.
+-- The website's small database (Cloudflare D1): visitor counts, the messages sent from the Contact page,
+-- and the wrong-password counter.
 -- Safe to run again at any time; it only creates what is missing.
 --   npx wrangler d1 execute yancheinu-stats --remote --file worker/schema.sql
 
@@ -36,3 +37,18 @@ CREATE TABLE IF NOT EXISTS ratelimit (
   n INTEGER NOT NULL,
   exp INTEGER NOT NULL
 );
+
+-- Every message sent from the Contact page, kept even when the email about it fails (worker/contact.js).
+-- Shown to the owner in /admin → Messages.
+CREATE TABLE IF NOT EXISTS messages (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  at INTEGER NOT NULL,                  -- when it arrived, in milliseconds since 1970
+  name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  phone TEXT NOT NULL DEFAULT '',
+  interest TEXT NOT NULL DEFAULT '',
+  message TEXT NOT NULL DEFAULT '',
+  spam INTEGER NOT NULL DEFAULT 0,      -- 1 = looked like advertising or a robot: kept, but not emailed
+  mail TEXT NOT NULL DEFAULT ''         -- what happened to the email: sent / failed: … / not emailed: …
+);
+CREATE INDEX IF NOT EXISTS messages_by_time ON messages (spam, at);

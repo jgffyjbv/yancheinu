@@ -3,6 +3,7 @@
  *
  * The pages themselves are plain HTML files in this repository. This Worker serves them and adds four things:
  *   /api/chat   the receptionist chat                              (chat.js)
+ *   /api/contact the Contact page's form: saved, then emailed      (contact.js)
  *   /admin      the owner's screens: wording, blog, visitors       (admin.js)
  *   /blog/…     articles written in /admin                         (blog.js)
  *   and, on every page, the wording the owner saved in /admin      (pages.js) plus the visitor count (stats.js)
@@ -11,6 +12,7 @@
  * If anything in the page handling goes wrong, the plain HTML file is served instead: the site stays up.
  */
 import { handleChat } from './chat.js';
+import { handleContact } from './contact.js';
 import { admin, ADMIN_VERSION } from './admin.js';
 import { esc, kvJson, signedIn, pagePath, assetText } from './lib.js';
 import { unitsFor, render, applySeo } from './pages.js';
@@ -128,6 +130,7 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname;
     if (path === '/api/chat') return handleChat(request, env);
+    if (path === '/api/contact') return handleContact(request, env, ctx);
 
     const inAdmin = path === '/admin' || path.startsWith('/admin/');
     try {

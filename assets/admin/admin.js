@@ -1,4 +1,4 @@
-/* Scripts for the /admin screens (pages list and the blog editor). */
+/* Scripts for the /admin screens (messages, pages list and the blog editor). */
 (function () {
   'use strict';
   var page = document.body.getAttribute('data-page');
@@ -22,6 +22,21 @@
       return;
     }
     say((r && r.message) || 'That did not work. Please try again.', true);
+  }
+
+  if (page === 'messages') {
+    var testBtn = document.querySelector('[data-test-mail]');
+    if (testBtn) {
+      testBtn.addEventListener('click', function () {
+        testBtn.disabled = true;
+        say('Sending…');
+        post('/admin/api/test-mail', {}).then(function (r) {
+          testBtn.disabled = false;
+          if (!r.ok) { fail(r); return; }
+          say(r.message || 'Sent.');
+        }).catch(function () { testBtn.disabled = false; say('No connection. Please try again.', true); });
+      });
+    }
   }
 
   if (page === 'pages') {
