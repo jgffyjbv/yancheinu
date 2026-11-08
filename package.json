@@ -1,0 +1,15 @@
+{
+  "name": "yancheinu",
+  "private": true,
+  "type": "module",
+  "description": "yancheinu.com \u2014 static pages plus one Cloudflare Worker (see wrangler.jsonc). The only dependency makes the free guides' PDF downloads.",
+  "scripts": {
+    "deploy": "wrangler deploy"
+  },
+  "dependencies": {
+    "@cloudflare/puppeteer": "1.4.0"
+  },
+  "overrides": {
+    "@puppeteer/browsers": "file:./worker/stubs/puppeteer-browsers"
+  }
+}

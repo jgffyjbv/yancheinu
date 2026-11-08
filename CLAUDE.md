@@ -65,6 +65,8 @@ cards on `services.html`, and the Kallah set appears again on `kallahs.html`.
 Mrs. Eisenbach signs in at **yancheinu.com/admin** with one password. From there she can:
 
 - **read every message sent from the Contact page** (Messages);
+- **publish a free guide** (Free Guides) — paste it from Word, press Publish, and the website
+  makes the guide's page and its PDF download by itself;
 - **change the wording of any page** — click a sentence on the page itself and type;
 - **write the blog** — drafts, publish, take offline;
 - **see her visitors** — per day, per page, where they came from.
@@ -179,11 +181,30 @@ the parents guide prints its chapters two-across (`grid--chapters`) to stay at t
 Then open the PDF and look at it before pushing.
 
 **She wants guides to be "Free Guides", not blog posts** — "I think it attracts" (Nov 2026).
-The menu's "Free Guides" opens `guides.html`, which lists every guide, newest first. To add
-a guide: copy `support-without-taking-over.html`, keep the "Free bonus guide · For …"
-eyebrow and both Download buttons, render its PDF as above, add a card for it at the top of
-`guides.html`, add it to `sitemap.xml`, and add one line about it to the facts in
-`worker/chat.js` (the "WHAT YOU KNOW" part, not the rules).
+The menu's "Free Guides" opens `guides.html`, which lists every guide, newest first.
+
+**New guides are added in /admin → Free Guides, not as HTML files** (since Nov 8 2026 — her
+request: "make sure next time she can do it herself"). She pastes the guide from Word, picks who
+it is for, and presses Publish. `worker/guides.js` then:
+- keeps the guide in KV (`guide:<slug>`, list in `guides:index`) and shows it at
+  `/guides/<slug>` — guides.html with `<main>` swapped, like the blog;
+- pours a card for it into guides.html between `<!-- guides … -->` and `<!-- /guides -->`,
+  ahead of the two built-in guides (leave those markers where they are);
+- **makes the PDF download itself** with Cloudflare Browser Rendering (the `BROWSER` binding):
+  it prints the guide's page with the same `@media print` styles, keeps the PDF in KV
+  (`guidepdf:<slug>`) and serves it at `/guides/<slug>.pdf`. It is remade on every save of a
+  published guide; "Make the PDF again" in the editor does it by hand.
+- turns lines that start with ☐ (as in her Word files) into a checklist with tick boxes.
+- adds the guide to the sitemap and tells the chat about it.
+
+The first Shadchanim guide ("A Shadchan's Quick Follow-Up Checklist") was added this way.
+The two older guides above stay as HTML pages with hand-made PDFs.
+
+**This means the Worker has one npm dependency, `@cloudflare/puppeteer`** (`package.json`).
+Run `npm install` before `npx wrangler deploy` on a new computer; Cloudflare's own build
+(on every push) installs it by itself. `@puppeteer/browsers` is replaced by an empty stand-in
+(`worker/stubs/`, see `overrides` in package.json): only the Node launcher uses it, never the
+Worker, and the web filter on the developer's Mac blocks one of its sub-packages.
 
 ---
 

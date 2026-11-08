@@ -15,6 +15,8 @@
   "ai": {
     "binding": "AI"
   },
+  // Cloudflare Browser Rendering prints each free guide written in /admin to its PDF download (worker/guides.js).
+  "browser": { "binding": "BROWSER" },
   // PREVIEW asks search engines to stay away from the test copy
   "vars": { "PREVIEW": "1" },
   "kv_namespaces": [{ "binding": "CONTENT", "id": "918af0d96782481abb3d27b86da234ed" }],

@@ -1,4 +1,4 @@
-/* Scripts for the /admin screens (messages, pages list and the blog editor). */
+/* Scripts for the /admin screens (messages, pages list, and the editor for free guides and blog articles). */
 (function () {
   'use strict';
   var page = document.body.getAttribute('data-page');
@@ -57,7 +57,13 @@
     });
   }
 
-  if (page === 'post') {
+  if (page === 'post' || page === 'guide') {
+    // one editor for both: a free guide has an introduction and gets a PDF; an article has a summary and a Google description
+    var guide = page === 'guide';
+    var cfg = guide
+      ? { api: '/admin/api/guide', del: '/admin/api/guide-delete', edit: '/admin/guides/edit?slug=', list: '/admin/guides', thing: 'guide', where: 'the Free Guides page', summary: 'f-intro', summaryName: 'an introduction', fields: ['f-title', 'f-intro', 'f-audience', 'f-body'] }
+      : { api: '/admin/api/post', del: '/admin/api/post-delete', edit: '/admin/blog/edit?slug=', list: '/admin/blog', thing: 'article', where: 'the Blog page', summary: 'f-teaser', summaryName: 'a summary', fields: ['f-title', 'f-teaser', 'f-description', 'f-audience', 'f-body'] };
+    var live = !!document.querySelector('[data-action="unpublish"]');
     var body = document.getElementById('f-body');
     var dirty = false;
     try { document.execCommand('defaultParagraphSeparator', false, 'p'); } catch (e) { /* older browsers */ }
@@ -69,7 +75,13 @@
       if (!b) { return; }
       body.focus();
       var cmd = b.getAttribute('data-cmd');
-      if (cmd === 'link') {
+      if (cmd === 'checklist') {
+        // a bulleted list that shows a box to tick on each line
+        document.execCommand('insertUnorderedList', false, null);
+        var node = window.getSelection && window.getSelection().anchorNode;
+        while (node && node !== body && node.nodeName !== 'UL') { node = node.parentNode; }
+        if (node && node.nodeName === 'UL') { node.className = 'checklist'; }
+      } else if (cmd === 'link') {
         var url = window.prompt('Paste the web address (for a page on this site, start with / — for example /book)', 'https://');
         if (url && /^(\/|#|https?:\/\/|mailto:|tel:)/i.test(url.trim())) { document.execCommand('createLink', false, url.trim()); }
         else if (url) { window.alert('A link has to start with https:// or with / for a page on this site.'); }
@@ -108,7 +120,7 @@
       } else { document.execCommand('insertText', false, text); }
       dirty = true;
     });
-    ['f-title', 'f-teaser', 'f-description', 'f-audience', 'f-body'].forEach(function (id) { document.getElementById(id).addEventListener('input', function () { dirty = true; }); });
+    cfg.fields.forEach(function (id) { document.getElementById(id).addEventListener('input', function () { dirty = true; }); });
     window.addEventListener('beforeunload', function (ev) { if (dirty) { ev.preventDefault(); ev.returnValue = ''; } });
     var buttons = Array.prototype.slice.call(document.querySelectorAll('[data-action]'));
     var busy = function (on) { buttons.forEach(function (x) { x.disabled = on; }); };
@@ -116,32 +128,48 @@
       b.addEventListener('click', function () {
         var action = b.getAttribute('data-action');
         if (action === 'delete') {
-          if (!window.confirm('Delete this article for good? This cannot be undone.')) { return; }
+          if (!window.confirm('Delete this ' + cfg.thing + ' for good? This cannot be undone.')) { return; }
           busy(true);
-          post('/admin/api/post-delete', { original: data.slug }).then(function (r) { busy(false); if (r.ok) { dirty = false; location.href = '/admin/blog'; } else { fail(r); } })
+          post(cfg.del, { original: data.slug }).then(function (r) { busy(false); if (r.ok) { dirty = false; location.href = cfg.list; } else { fail(r); } })
             .catch(function () { busy(false); say('No connection. Nothing was deleted – please try again.', true); });
           return;
         }
-        if (action === 'publish') {
-          if (!document.getElementById('f-teaser').value.trim() || !body.textContent.trim()) { say('Please add a summary and the article text before publishing.', true); return; }
-          if (!window.confirm('Publish this article? It will appear on the Blog page for everyone.')) { return; }
+        if (action === 'pdf') {
+          if (dirty && !window.confirm('You have changes that are not saved. Make the PDF from the guide as it was last saved?')) { return; }
+          say('Making the PDF… this takes about 15 seconds.');
+          busy(true);
+          post('/admin/api/guide-pdf', { original: data.slug }).then(function (r) {
+            busy(false);
+            if (!r.ok) { fail(r); return; }
+            dirty = false;
+            location.href = cfg.edit + encodeURIComponent(r.slug) + '&saved=pdf';
+          }).catch(function () { busy(false); say('No connection. Please try again.', true); });
+          return;
         }
-        say('Saving…');
-        busy(true);   // one click, one article: a second click on a new article would otherwise create a copy
-        post('/admin/api/post', {
-          original: data.slug, action: action,
-          title: document.getElementById('f-title').value, audience: document.getElementById('f-audience').value,
-          teaser: document.getElementById('f-teaser').value,
-          description: document.getElementById('f-description').value, body: body.innerHTML
-        }).then(function (r) {
+        if (action === 'publish') {
+          if (!document.getElementById(cfg.summary).value.trim() || !body.textContent.trim()) { say('Please add ' + cfg.summaryName + ' and the ' + cfg.thing + ' text before publishing.', true); return; }
+          if (!window.confirm('Publish this ' + cfg.thing + '? It will appear on ' + cfg.where + ' for everyone.')) { return; }
+        }
+        var slow = guide && (action === 'publish' || (live && action === 'save'));
+        say(slow ? 'Saving and making the PDF download… this takes about 15 seconds.' : 'Saving…');
+        busy(true);   // one click, one save: a second click on a new one would otherwise create a copy
+        var fields = { original: data.slug, action: action, title: document.getElementById('f-title').value, audience: document.getElementById('f-audience').value, body: body.innerHTML };
+        if (guide) { fields.intro = document.getElementById('f-intro').value; }
+        else { fields.teaser = document.getElementById('f-teaser').value; fields.description = document.getElementById('f-description').value; }
+        post(cfg.api, fields).then(function (r) {
           busy(false);
           if (!r.ok) { fail(r); return; }
           dirty = false;
-          location.href = '/admin/blog/edit?slug=' + encodeURIComponent(r.slug) + '&saved=' + action;
+          var note = guide && r.status === 'published' && r.pdf === false ? 'nopdf' : action;
+          location.href = cfg.edit + encodeURIComponent(r.slug) + '&saved=' + note;
         }).catch(function () { busy(false); say('No connection. Your text is still here – please try again.', true); });
       });
     });
     var saved = /[?&]saved=([a-z]+)/.exec(location.search);
-    if (saved) { say(saved[1] === 'publish' ? 'Published. It is on the Blog page now.' : saved[1] === 'unpublish' ? 'Taken offline. It is a draft again.' : 'Saved. Press View to see it as visitors will.'); }
+    if (saved) {
+      var done = { publish: 'Published. It is on ' + cfg.where + ' now' + (guide ? ', with its PDF download.' : '.'), unpublish: 'Taken offline. It is a draft again.', pdf: 'Done — a fresh PDF download is ready.' };
+      if (saved[1] === 'nopdf') { say('Saved and online — but the PDF download could not be made just now. Please press "Make the PDF again" in a few minutes.', true); }
+      else { say(done[saved[1]] || 'Saved. Press View to see it as visitors will.'); }
+    }
   }
 })();

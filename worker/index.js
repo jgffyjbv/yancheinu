@@ -6,6 +6,7 @@
  *   /api/contact the Contact page's form: saved, then emailed      (contact.js)
  *   /admin      the owner's screens: wording, blog, visitors       (admin.js)
  *   /blog/…     articles written in /admin                         (blog.js)
+ *   /guides/…   free guides written in /admin, and their PDFs       (guides.js)
  *   and, on every page, the wording the owner saved in /admin      (pages.js) plus the visitor count (stats.js)
  *
  * Images, CSS and scripts under /assets/ never come through here (see run_worker_first in wrangler.jsonc).
@@ -18,6 +19,7 @@ import { esc, kvJson, signedIn, pagePath, assetText } from './lib.js';
 import { unitsFor, render, applySeo } from './pages.js';
 import { getPost, getIndex, published, fillIndex, postPage, sitemapWith } from './blog.js';
 import { countable, record } from './stats.js';
+import { getGuide, getGuideIndex, fillGuides, guidePage, serveGuidePdf, guidesInSitemap } from './guides.js';
 
 const BLOG_LINK = /<li\b[^>]*\sdata-blog-link\b[^>]*>[\s\S]*?<\/li>\s*/g;
 
@@ -34,8 +36,10 @@ function pageHeaders(env, owner) {
 }
 
 const two = (long, short) => `<span class="yn-l">${long}</span><span class="yn-s">${short}</span>`;
-function adminBar({ path, post }) {
-  const tools = post
+function adminBar({ path, post, guide }) {
+  const tools = guide
+    ? `<a class="yn-btn yn-btn--main" href="/admin/guides/edit?slug=${encodeURIComponent(guide.slug)}">${two('Edit this guide', 'Edit guide')}</a>`
+    : post
     ? `<a class="yn-btn yn-btn--main" href="/admin/blog/edit?slug=${encodeURIComponent(post.slug)}">${two('Edit this article', 'Edit article')}</a>`
     : `<button type="button" class="yn-btn yn-btn--main" data-yn="edit">${two('Edit the text on this page', 'Edit text')}</button><button type="button" class="yn-btn" data-yn="seo">${two('Page title &amp; Google description', 'Title')}</button>`;
   return `<div id="yn-bar" dir="ltr" lang="en" data-path="${esc(path)}" data-noedit><span class="yn-bar__who">You are signed in</span>${tools}<a class="yn-btn" href="/admin">${two('All editing tools', 'Tools')}</a><span class="yn-bar__status" role="status" aria-live="polite"></span></div>
@@ -75,12 +79,22 @@ async function servePage(request, env, ctx, url) {
 
   const owner = await signedIn(request, env);
   const article = /^\/blog\/([a-z0-9-]+)(\/?)$/.exec(path);
+  const guidePath = /^\/guides\/([a-z0-9-]+)(\/?)$/.exec(path);
   let html;
   let key;
   let post = null;
+  let guide = null;
   let index = null;
 
-  if (article) {
+  if (guidePath) {
+    guide = await getGuide(env, guidePath[1]);
+    if (!guide || (guide.status !== 'published' && !owner)) return notFound(env, url, owner);
+    if (guidePath[2]) return new Response(null, { status: 301, headers: { location: `${origin}/guides/${guide.slug}` } });
+    const shell = await assetText(env, origin, '/guides');
+    if (!shell) return notFound(env, url, owner);
+    html = guidePage(shell, guide, { admin: owner });
+    key = '/guides';
+  } else if (article) {
     post = await getPost(env, article[1]);
     if (!post || (post.status !== 'published' && !owner)) return notFound(env, url, owner);
     if (article[2]) return new Response(null, { status: 301, headers: { location: `${origin}/blog/${post.slug}` } });
@@ -105,14 +119,15 @@ async function servePage(request, env, ctx, url) {
   const [page, shared, list] = await Promise.all([kvJson(env, 'page:' + key), kvJson(env, 'shared'), index || getIndex(env)]);
   const hasPosts = published(list).length > 0;
   if (key === '/blog' && !post) html = fillIndex(html, list, owner);
+  if (key === '/guides' && !guide) html = fillGuides(html, await getGuideIndex(env), owner);
 
   const wording = { ...((shared && shared.t) || {}), ...((page && page.t) || {}) };
-  let out = render(html, unitsFor(html), wording, owner && !post);
-  if (!post) out = applySeo(out, page && page.seo);
+  let out = render(html, unitsFor(html), wording, owner && !post && !guide);
+  if (!post && !guide) out = applySeo(out, page && page.seo);
   // the word "Blog" joins the menu only once there is something to read
   if (!hasPosts && !owner) out = out.replace(BLOG_LINK, '');
-  if (owner) out = out.replace(/<\/body>/i, () => adminBar({ path: key, post }) + '</body>');
-  else if (countable(request)) ctx.waitUntil(record(request, env, post ? '/blog/' + post.slug : key));
+  if (owner) out = out.replace(/<\/body>/i, () => adminBar({ path: key, post, guide }) + '</body>');
+  else if (countable(request)) ctx.waitUntil(record(request, env, post ? '/blog/' + post.slug : guide ? '/guides/' + guide.slug : key));
 
   return new Response(request.method === 'HEAD' ? null : out, { status: 200, headers: pageHeaders(env, owner) });
 }
@@ -122,7 +137,8 @@ async function sitemap(env, url) {
   if (!res.ok) return res;
   const h = new Headers({ 'content-type': 'application/xml; charset=utf-8', 'cache-control': 'no-cache' });
   if (env.PREVIEW) h.set('x-robots-tag', 'noindex, nofollow');
-  return new Response(sitemapWith(await res.text(), await getIndex(env)), { status: 200, headers: h });
+  const [posts, guides] = await Promise.all([getIndex(env), getGuideIndex(env)]);
+  return new Response(guidesInSitemap(sitemapWith(await res.text(), posts), guides), { status: 200, headers: h });
 }
 
 export default {
@@ -137,6 +153,11 @@ export default {
       if (inAdmin) return await admin(request, env, url);
       const reading = request.method === 'GET' || request.method === 'HEAD';
       if (reading && path === '/sitemap.xml') return await sitemap(env, url);
+      const pdf = reading && /^\/guides\/([a-z0-9-]+)\.pdf$/.exec(path);
+      if (pdf) {
+        const res = await serveGuidePdf(env, url, pdf[1], () => assetText(env, url.origin, '/guides'));
+        if (res) return res;
+      }
       // a page is an address without a file ending; everything else is a file and goes straight through
       if (reading && !/\.[a-zA-Z0-9]{2,5}$/.test(path)) return await servePage(request, env, ctx, url);
     } catch (err) {

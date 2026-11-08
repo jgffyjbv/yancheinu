@@ -1,0 +1,7 @@
+{
+  "name": "@puppeteer/browsers",
+  "version": "2.2.4",
+  "private": true,
+  "description": "Empty stand-in. @cloudflare/puppeteer lists this package, but only its Node launcher uses it; the Worker never loads it. It is replaced (package.json \"overrides\") because the web filter on the developer's Mac blocks one of its sub-packages, proxy-agent.",
+  "main": "index.js"
+}

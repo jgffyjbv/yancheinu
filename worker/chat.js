@@ -1,6 +1,7 @@
 /**
  * The receptionist chat: POST /api/chat.
  */
+import { getGuideIndex, guidesForChat } from './guides.js';
 
 // Workers AI model. Swap here if it's ever deprecated — `npx wrangler ai models`
 // lists what's current. A cheaper fallback: @cf/meta/llama-3.1-8b-instruct-fp8
@@ -126,8 +127,14 @@ async function chat(request, env) {
   }
 
   try {
+    // guides published in /admin → Free Guides join the facts, so the chat can name them too
+    let system = SYSTEM;
+    try {
+      const more = guidesForChat(await getGuideIndex(env));
+      if (more) system = SYSTEM.replace('\n- Contact:', `\n- More free guides on the same page: ${more}.\n- Contact:`);
+    } catch (e) { /* the chat works without them */ }
     const result = await env.AI.run(MODEL, {
-      messages: [{ role: 'system', content: SYSTEM }, ...history],
+      messages: [{ role: 'system', content: system }, ...history],
       max_tokens: MAX_TOKENS,
       temperature: 0.3,
     });

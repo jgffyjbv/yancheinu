@@ -16,6 +16,8 @@
   "ai": {
     "binding": "AI"
   },
+  // Cloudflare Browser Rendering prints each free guide written in /admin to its PDF download (worker/guides.js).
+  "browser": { "binding": "BROWSER" },
   // Messages from the Contact page are emailed with Cloudflare Email Sending, from the notify.yancheinu.com
   // subdomain (set up Nov 2026 with `npx wrangler email sending enable notify.yancheinu.com`; the main domain's
   // own mail records are untouched). Every message is also kept in the database below.

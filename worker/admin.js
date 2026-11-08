@@ -1,6 +1,6 @@
 /**
  * /admin — the owner's side of the website: read the messages from the Contact page, change wording on any
- * page, write the blog, see the visitors.
+ * page, publish free guides, write the blog, see the visitors.
  *
  * One password (the ADMIN_PASSWORD secret), a signed cookie, nothing else. Every screen here is "noindex".
  */
@@ -8,9 +8,10 @@ import { DAY, esc, clean, secure, json, hmac, same, plain, field, cleanInline, c
 import { unitsFor, readSeo } from './pages.js';
 import { AUDIENCES, audienceOf, getPost, postMeta, rebuildIndex, published, drafts } from './blog.js';
 import { notify } from './contact.js';
+import { getGuide, guideMeta, rebuildGuideIndex, liveGuides, draftGuides, makeChecklists, makeGuidePdf } from './guides.js';
 import { report, strikes, strike, today } from './stats.js';
 
-export const ADMIN_VERSION = '2';
+export const ADMIN_VERSION = '3';
 const LOGIN_TRIES = 8;
 const SUPPORT = { label: 'bhwebs.com/support', href: 'https://bhwebs.com/support' };
 
@@ -87,6 +88,7 @@ textarea{min-height:90px;resize:vertical}
 .rte:focus{box-shadow:0 0 0 3px rgba(143,174,148,.4)}
 .rte h2{font:600 26px/1.2 Georgia,serif;margin:1.2em 0 .4em}.rte h3{font:600 21px/1.25 Georgia,serif;margin:1.1em 0 .4em}
 .rte blockquote{border-left:3px solid #C9702E;margin:1em 0;padding:.2em 0 .2em 1em;font-style:italic}
+.rte ul.checklist{list-style:none;padding-left:0}.rte ul.checklist li::before{content:"☐  ";color:#5D6E60}
 .status{display:inline-block;font-size:15px}.status.ok{color:#1E4230;font-weight:700}.status.err{color:#a4452e;font-weight:700}
 .login{max-width:380px;margin:12vh auto;background:#fff;border:1px solid #E2D9C4;border-radius:16px;padding:32px}
 .login button{width:100%;font:inherit;font-weight:700;background:#C9702E;color:#fff;border:0;border-radius:999px;padding:13px;cursor:pointer;margin-top:18px}
@@ -112,7 +114,7 @@ table.list .bar{display:block;height:5px;border-radius:3px;background:#C2D3C3;ma
 `;
 const html = (title, body) => new Response(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>${esc(title)} · Yancheinu</title><link rel="icon" type="image/svg+xml" href="/favicon.svg"><style>${ADMIN_CSS}</style></head>${body}</html>`, { headers: secure({ 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' }) });
 
-const NAV = [['/admin', 'Start'], ['/admin/messages', 'Messages'], ['/admin/pages', 'Pages'], ['/admin/blog', 'Blog'], ['/admin/visitors', 'Visitors']];
+const NAV = [['/admin', 'Start'], ['/admin/messages', 'Messages'], ['/admin/pages', 'Pages'], ['/admin/guides', 'Free Guides'], ['/admin/blog', 'Blog'], ['/admin/visitors', 'Visitors']];
 function shell(title, active, body, { page = '', data = null } = {}) {
   return html(title, `<body data-page="${esc(page)}"><div class="top"><div><strong>Yancheinu · website</strong><nav>${NAV.map(([href, label]) => `<a href="${href}"${href === active ? ' class="on"' : ''}>${label}</a>`).join('')}<a href="/" target="_blank" rel="noopener">View the website ↗</a></nav></div><form method="post" action="/admin/logout"><button>Sign out</button></form></div><main>${body}</main>${data ? `<script type="application/json" id="data">${JSON.stringify(data).replace(/</g, '\\u003c')}</script>` : ''}<script src="/assets/admin/admin.js?v=${ADMIN_VERSION}" defer></script></body>`);
 }
@@ -268,6 +270,38 @@ export async function admin(request, env, url) {
     return shell('Pages', '/admin/pages', `<h1>Pages</h1><p class="help">Open a page, press <b>Edit the text on this page</b>, then click any outlined sentence, heading or button and type. Press <b>Save changes</b> when you are done; visitors see it within about a minute.</p><p class="help">You can reword anything that is outlined. To add or remove a whole paragraph, bullet or section, to change a phone number, link or photo, or for anything about the design, send a request at ${help}. The questions for mothers and for shadchanim appear on the home page <i>and</i> on the Coaching &amp; Courses page — change both.</p><p class="status" id="status" role="status"></p>${rows.join('')}${sharedRow}`, { page: 'pages' });
   }
 
+  if (path === '/admin/guides') {
+    const index = await rebuildGuideIndex(env);
+    const rows = [...draftGuides(index), ...liveGuides(index)].map((g) => {
+      const live = g.status === 'published';
+      const pdf = live ? (g.pdfAt ? ' · PDF download ready' : ' · <span class="err">PDF not made yet — open it and press "Make the PDF again"</span>') : '';
+      return `<div class="box"><div class="row" style="justify-content:space-between"><div><p class="who">${esc(g.title)}</p><p class="meta" style="margin:0"><span class="tag${live ? ' live' : ''}">${live ? 'Published' : 'Draft'}</span>${esc(audienceOf(g.audience))}${g.published ? ' · published ' + esc(longDay(g.published)) : ''}${pdf}</p></div><div class="row" style="margin:0"><a class="act main" href="/admin/guides/edit?slug=${encodeURIComponent(g.slug)}">Edit</a><a class="act" href="/guides/${esc(g.slug)}" target="_blank" rel="noopener">View</a>${live && g.pdfAt ? `<a class="act" href="/guides/${esc(g.slug)}.pdf?v=${g.pdfAt}" target="_blank" rel="noopener">PDF</a>` : ''}</div></div></div>`;
+    }).join('');
+    return shell('Free Guides', '/admin/guides', `<h1>Free Guides</h1><p class="help">Each free guide gets its own page with a <b>free PDF download</b>, and appears at the top of the <a href="/guides" target="_blank" rel="noopener">Free Guides page</a>, newest first. The website makes the PDF by itself when you publish, and again whenever you save changes to a published guide. A <b>draft</b> is visible only to you while you are signed in.</p>
+      <p><a class="act main" href="/admin/guides/edit">Add a new free guide</a></p>${rows || '<p class="empty">No guides written here yet. Press "Add a new free guide" to begin.</p>'}
+      <p class="help" style="margin-top:26px">The first two guides — "3 Ways to Stay Calm Before a Meeting" and "How to Support Your Child&rsquo;s Shidduch Journey Without Taking Over" — were built as pages of the website. Change their wording under <a href="/admin/pages">Pages</a>.</p>`, { page: 'guides' });
+  }
+
+  if (path === '/admin/guides/edit') {
+    const slug = url.searchParams.get('slug') || '';
+    const stored = slug ? await getGuide(env, slug) : null;
+    if (slug && !stored) return new Response(null, { status: 303, headers: secure({ location: '/admin/guides' }) });
+    const g = stored || { slug: '', title: '', audience: AUDIENCES[0], intro: '', body: '', status: 'draft', published: '', pdfAt: 0 };
+    const live = g.status === 'published';
+    const address = !g.slug ? 'The web address is made from the title.' : g.published ? `Web address: yancheinu.com/guides/${esc(g.slug)} (it stays the same even if you change the title)` : `Web address: yancheinu.com/guides/${esc(g.slug)} (it follows the title until you publish; after that it stays the same)`;
+    return shell(g.slug ? 'Edit free guide' : 'New free guide', '/admin/guides', `<p><a href="/admin/guides">← All free guides</a></p><h1>${g.slug ? 'Edit free guide' : 'New free guide'}</h1>
+      <p class="meta"><span class="tag${live ? ' live' : ''}">${live ? 'Published' : 'Draft'}</span>${address}</p>
+      <label for="f-title">Title</label><input type="text" id="f-title" maxlength="140" value="${esc(g.title)}">
+      <label for="f-audience">Who is it for</label><select id="f-audience">${AUDIENCES.map((t) => `<option${t === audienceOf(g.audience) ? ' selected' : ''}>${esc(t)}</option>`).join('')}</select>
+      <label for="f-intro">Introduction <small>– one or two lines, shown under the title and on the Free Guides page</small></label><textarea id="f-intro" maxlength="400" style="min-height:64px">${esc(g.intro)}</textarea>
+      <label id="l-body">The guide</label>
+      <div class="rte-bar" id="rte-bar"><button type="button" data-cmd="formatBlock" data-arg="h2">Heading</button><button type="button" data-cmd="formatBlock" data-arg="h3">Small heading</button><button type="button" data-cmd="formatBlock" data-arg="p">Normal text</button><button type="button" data-cmd="bold"><b>Bold</b></button><button type="button" data-cmd="italic"><i>Italic</i></button><button type="button" data-cmd="insertUnorderedList">• List</button><button type="button" data-cmd="insertOrderedList">1. List</button><button type="button" data-cmd="checklist">☐ Checklist</button><button type="button" data-cmd="formatBlock" data-arg="blockquote">Quote</button><button type="button" data-cmd="link">Link</button><button type="button" data-cmd="unlink">Remove link</button></div>
+      <div class="rte" id="f-body" contenteditable="true" role="textbox" aria-multiline="true" aria-labelledby="l-body">${g.body}</div>
+      <p class="meta" style="margin-top:8px">You can paste straight from Word: headings, lists and bold are kept, the fonts and colours are not. Lines that start with ☐ become a checklist with a box to tick on each line.</p>
+      <p class="help" style="margin:22px 0 0">${live ? 'This guide is public. "Save changes" updates the page and makes a fresh PDF download — it takes about 15 seconds.' : 'Save it as a draft, press View to see it exactly as visitors will, then Publish when you are happy with it. Publishing also makes the PDF download (about 15 seconds).'}</p>
+      <div class="row" style="margin-top:14px">${live ? '<button class="act main" data-action="save">Save changes</button><button class="act" data-action="pdf">Make the PDF again</button><button class="act" data-action="unpublish">Take offline (back to draft)</button>' : `<button class="act main" data-action="save">Save as draft</button>${g.slug ? '<button class="act" data-action="publish">Publish</button>' : ''}`}${g.slug ? `<a class="act" href="/guides/${esc(g.slug)}" target="_blank" rel="noopener">View</a>${live && g.pdfAt ? `<a class="act" href="/guides/${esc(g.slug)}.pdf?v=${g.pdfAt}" target="_blank" rel="noopener">Open the PDF</a>` : ''}<button class="act del" data-action="delete">Delete</button>` : ''}<span class="status" id="status" role="status"></span></div>`, { page: 'guide', data: { slug: g.slug } });
+  }
+
   if (path === '/admin/blog') {
     const index = await rebuildIndex(env);
     const rows = [...drafts(index), ...published(index)].map((p) => `<div class="box"><div class="row" style="justify-content:space-between"><div><p class="who">${esc(p.title)}</p><p class="meta" style="margin:0"><span class="tag${p.status === 'published' ? ' live' : ''}">${p.status === 'published' ? 'Published' : 'Draft'}</span>${esc(audienceOf(p.audience))}${p.published ? ' · published ' + esc(longDay(p.published)) : ''}</p></div><div class="row" style="margin:0"><a class="act main" href="/admin/blog/edit?slug=${encodeURIComponent(p.slug)}">Edit</a><a class="act" href="/blog/${esc(p.slug)}" target="_blank" rel="noopener">View</a></div></div></div>`).join('');
@@ -303,6 +337,7 @@ export async function admin(request, env, url) {
     <div class="cards">
       <a href="/admin/messages"><b>Messages</b><span>Everything people send from the Contact page.</span></a>
       <a href="/admin/pages"><b>Change the text on a page</b><span>Open any page, click a sentence and type.</span></a>
+      <a href="/admin/guides"><b>Free Guides</b><span>Add a free guide with its own PDF download.</span></a>
       <a href="/admin/blog"><b>Blog</b><span>Write, edit and publish articles.</span></a>
       <a href="/admin/visitors"><b>Visitors</b><span>How many people came, and what they read.</span></a>
     </div>
@@ -311,6 +346,7 @@ export async function admin(request, env, url) {
       <li>While you are signed in, a dark bar appears at the bottom of every page of your website.</li>
       <li>To change wording: open the page, press "Edit the text on this page", click any outlined text, type, then press "Save changes".</li>
       <li>The menu and the footer are the same on every page: change them once, on any page.</li>
+      <li>Free Guides: paste a guide from Word, save it as a draft, press View to check it, then Publish. The website makes the PDF download by itself.</li>
       <li>Blog: write a new article, save it as a draft, press View to check it, then Publish.</li>
       <li>Everything you save appears for visitors within about a minute.</li>
       <li>Messages from the Contact page are emailed to you and also kept under Messages, so none can get lost.</li>
@@ -387,6 +423,64 @@ async function adminAction(request, env, { path, origin }) {
     await apply('page:' + target, mine);
     await apply('shared', everywhere);
     return json({ ok: true });
+  }
+
+  if (path === '/admin/api/guide' || path === '/admin/api/guide-delete' || path === '/admin/api/guide-pdf') {
+    const original = String(body.original || '');
+    if (original && !/^[a-z0-9-]{1,80}$/.test(original)) return json({ ok: false, message: 'That guide no longer exists.' }, 404);
+    const cur = original ? await kvStrict(env, 'guide:' + original) : null;
+    if (original && !cur) return json({ ok: false, message: 'That guide no longer exists.' }, 404);
+    const index = (await kvStrict(env, 'guides:index')) || { items: [] };
+    const putIndex = (g) => env.CONTENT.put('guides:index', JSON.stringify({ items: [...index.items.filter((x) => x.slug !== g.slug && x.slug !== (cur && cur.slug)), guideMeta(g)] }));
+    // make (or remake) the PDF download of a published guide; the guide itself is already saved by then
+    const withPdf = async (g) => {
+      const made = await makeGuidePdf(env, await assetText(env, origin, '/guides'), g, origin);
+      if (made.ok) { g.pdfAt = made.at; await env.CONTENT.put('guide:' + g.slug, JSON.stringify(g)); await putIndex(g); }
+      return made;
+    };
+    if (path.endsWith('/guide-delete')) {
+      await env.CONTENT.delete('guide:' + original);
+      await env.CONTENT.delete('guidepdf:' + original);
+      await env.CONTENT.put('guides:index', JSON.stringify({ items: index.items.filter((x) => x.slug !== original) }));
+      return json({ ok: true });
+    }
+    if (path.endsWith('/guide-pdf')) {
+      if (!cur || cur.status !== 'published') return json({ ok: false, message: 'Publish the guide first — the PDF is made for published guides.' }, 400);
+      const made = await withPdf(cur);
+      return made.ok ? json({ ok: true, slug: cur.slug, status: cur.status, pdf: true }) : json({ ok: false, message: 'The PDF could not be made just now. Your guide is saved and online; please try again in a few minutes.' }, 502);
+    }
+    const title = field(body.title, 140);
+    if (!title) return json({ ok: false, message: 'Please give the guide a title.' }, 422);
+    if (String(body.body || '').length > 120000) return json({ ok: false, message: 'This guide is too long to save in one piece. Please shorten it, or split it into two guides.' }, 413);
+    const action = String(body.action || 'save');
+    const status = action === 'publish' ? 'published' : action === 'unpublish' ? 'draft' : (cur && cur.status) || 'draft';
+    const day = today();
+    const next = {
+      slug: cur ? cur.slug : '',
+      title,
+      audience: audienceOf(body.audience),
+      intro: field(body.intro, 400),
+      body: makeChecklists(cleanBlocks(body.body)),
+      status,
+      published: (cur && cur.published) || (status === 'published' ? day : ''),
+      updated: day,
+      pdfAt: (cur && cur.pdfAt) || 0,
+    };
+    if (status === 'published' && (!next.intro || !plain(next.body))) return json({ ok: false, message: 'Please add an introduction and the guide itself before publishing.' }, 422);
+    // the web address follows the title until the guide has been published once; after that it never changes
+    if (!cur || !cur.published) {
+      const first = slugify(title) || 'guide';
+      let slug = first;
+      let n = 2;
+      while (slug !== (cur && cur.slug) && (index.items.some((x) => x.slug === slug) || (await kvStrict(env, 'guide:' + slug)))) slug = `${first}-${n++}`;
+      next.slug = slug;
+    }
+    await env.CONTENT.put('guide:' + next.slug, JSON.stringify(next));
+    if (cur && cur.slug !== next.slug) { await env.CONTENT.delete('guide:' + cur.slug); await env.CONTENT.delete('guidepdf:' + cur.slug); }
+    await putIndex(next);
+    if (status !== 'published') return json({ ok: true, slug: next.slug, status });
+    const made = await withPdf(next);
+    return json({ ok: true, slug: next.slug, status, pdf: made.ok });
   }
 
   if (path === '/admin/api/post' || path === '/admin/api/post-delete') {

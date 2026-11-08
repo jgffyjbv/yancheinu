@@ -34,6 +34,7 @@ point of failure worth planning around.
 | The /admin password | A Cloudflare secret on the Worker (`ADMIN_PASSWORD`) | Mrs. Eisenbach knows it; Abraham keeps a copy |
 | Booking calendars | Cal.com — `yancheinu-coaching-by-simy-eisenbach-bxlkyj` | **Mrs. Eisenbach's own account** |
 | Contact form messages | Saved in the D1 database `yancheinu-stats` (table `messages`, shown in /admin → Messages) and emailed to yancheinucoaching@gmail.com from `notify.yancheinu.com` via Cloudflare Email Sending — replaced FormSubmit in Nov 2026 | Same Cloudflare account; the inbox is hers |
+| Free guides written in /admin, and their PDF downloads | KV namespace `yancheinu-content` (`guide:` / `guidepdf:` keys); PDFs printed by Cloudflare Browser Rendering (`BROWSER` binding) | Same Cloudflare account |
 | Newsletter | MailerLite | **Her own account** |
 
 Useful identifiers (not secrets):
