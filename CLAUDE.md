@@ -222,6 +222,15 @@ calendar inline.
 Neither event has a price set in Cal.com, so both book free and the session is
 invoiced separately. Adding payment is a Cal.com setting, not a site change.
 
+The four package / follow-up cards open the 15-minute calendar with the choice
+in the booking notes. The prices on the cards are hers, saved in /admin — don't
+edit the price lines in `book.html`, or her saved changes stop applying.
+
+The last card, **Emergency Session** ($500, outside regular hours incl. erev
+Shabbos / erev Yom Tov), is a plain phone link (`tel:` 718-926-4773) with
+`data-direct`, so the script does not open a calendar for it. Keep it the LAST
+card: saved /admin edits are matched by text and by order on the page.
+
 ---
 
 ## Things that must not be published

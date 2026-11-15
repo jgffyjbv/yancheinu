@@ -393,7 +393,8 @@ strong{color:var(--ink);font-weight:800}
 .booking-choice:hover{border-color:var(--sage);color:inherit}
 .booking-choice.is-active{border-color:var(--forest);box-shadow:var(--shadow);transform:translateY(-5px)}
 .booking-choice__meta{font-weight:800;color:var(--forest);font-size:.95rem;margin-bottom:12px}
-.badge--free{
+.booking-choice--wide{grid-column:1/-1}
+.badge--free,.badge--urgent{
   position:absolute;top:22px;right:22px;
   background:var(--autumn);border-color:var(--autumn);color:#FBF8EF;
   letter-spacing:.08em;text-transform:uppercase;font-size:.72rem;padding:6px 14px;

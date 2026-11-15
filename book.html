@@ -139,7 +139,8 @@
 
       <!-- The four choices below (added Nov 15 2026) have no Cal.com booking type of their own yet: each opens the
            15-minute calendar with the choice written into the booking notes. When she makes a booking type for one,
-           put its Cal.com link in that card's href. The prices are SAMPLE prices until she confirms them. -->
+           put its Cal.com link in that card's href. The prices shown live are HER prices, saved in /admin (KV) —
+           don't edit the price lines here, or her saved changes stop applying. -->
       <a class="card booking-choice" data-label="3-Month Family Shidduch Package"
          href="https://cal.com/yancheinu-coaching-by-simy-eisenbach-bxlkyj/15min?notes=3-Month%20Family%20Shidduch%20Package">
         <div class="card__icon" aria-hidden="true">
@@ -188,6 +189,23 @@
         <p class="booking-choice__meta">15 minutes &middot; $40</p>
         <p>A short follow-up call for current clients &mdash; a quick check-in, a question that came up, or help with a decision between sessions.</p>
         <span class="more">See available times
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </span>
+      </a>
+
+      <!-- Emergency session (her request Nov 15 2026). It is outside her regular hours, so it does NOT open the calendar:
+           data-direct makes the script below leave the click alone, and the card is a plain phone link.
+           Keep this card LAST — her saved /admin edits are matched by text and by order on the page. -->
+      <a class="card booking-choice booking-choice--wide" data-direct data-label="Emergency Session"
+         href="tel:+17189264773">
+        <span class="badge badge--urgent">Urgent</span>
+        <div class="card__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
+        </div>
+        <h3>Emergency Session</h3>
+        <p class="booking-choice__meta">Outside regular hours &middot; $500</p>
+        <p>For urgent needs that can&rsquo;t wait for a regular appointment. Offered outside Mrs. Eisenbach&rsquo;s regular working hours &mdash; including erev Shabbos and erev Yom Tov &mdash; to give you immediate support when time is of the essence.</p>
+        <span class="more">Call or text 718-926-4773
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
         </span>
       </a>
@@ -286,7 +304,7 @@
 
   choices.addEventListener('click', function(e){
     var card = e.target.closest ? e.target.closest('.booking-choice') : null;
-    if (!card) return;
+    if (!card || card.hasAttribute('data-direct')) return;   // e.g. the Emergency Session: a plain phone link
     e.preventDefault();
     open(card);
   });
