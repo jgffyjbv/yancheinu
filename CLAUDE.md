@@ -4,7 +4,7 @@ Hand-written static site for **Mrs. Simy Eisenbach** (Yancheinu — shidduch & l
 coaching, Boro Park). No framework and no build step: every page is a complete
 HTML file, and they all share `assets/site.css` and `assets/site.js`.
 
-Pages: `index` · `about` · `services` · `kallahs` · `book` · `contact` · `thanks` ·
+Pages: `index` · `about` · `services` · `kallahs` · `shidduch-package` (her 3-month package) · `book` · `contact` · `thanks` ·
 `guides` (the Free Guides index) · `calm-before-a-meeting` and `support-without-taking-over`
 (the two free guides) · `blog` (the frame for the blog — see below).
 
@@ -57,6 +57,9 @@ The homepage runs four sets of questions — **Mothers**, **Singles**, **Kallahs
 cards on `services.html`, and the Kallah set appears again on `kallahs.html`.
 
 **That duplication is deliberate.** If you change a question, change both copies.
+
+The same goes for the 3-month package's "What you'll receive" list: it is on
+`shidduch-package.html` and again in the `#package` block on `services.html`.
 
 ---
 
