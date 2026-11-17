@@ -11,7 +11,7 @@ import { notify } from './contact.js';
 import { getGuide, guideMeta, rebuildGuideIndex, liveGuides, draftGuides, makeChecklists, makeGuidePdf } from './guides.js';
 import { report, strikes, strike, today } from './stats.js';
 
-export const ADMIN_VERSION = '3';
+export const ADMIN_VERSION = '4';
 const LOGIN_TRIES = 8;
 const SUPPORT = { label: 'bhwebs.com/support', href: 'https://bhwebs.com/support' };
 
@@ -80,7 +80,8 @@ h1{font:600 32px/1.2 Georgia,serif;margin:0 0 6px;color:#142E21}h2{font:600 22px
 .cards b{display:block;font:600 21px/1.25 Georgia,serif;margin-bottom:6px;color:#142E21}.cards span{color:#5D6E60;font-size:15px}
 label{display:block;font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#5D6E60;margin:18px 0 6px}
 label small{font-weight:400;text-transform:none;letter-spacing:0;color:#5D6E60}
-input[type=text],input[type=password],select,textarea{width:100%;box-sizing:border-box;font:inherit;padding:12px 14px;border:1px solid #8FAE94;border-radius:10px;background:#fff;color:#26382C}
+input[type=text],input[type=password],input[type=date],select,textarea{width:100%;box-sizing:border-box;font:inherit;padding:12px 14px;border:1px solid #8FAE94;border-radius:10px;background:#fff;color:#26382C}
+input[type=date]{max-width:280px}
 textarea{min-height:90px;resize:vertical}
 .rte-bar{display:flex;flex-wrap:wrap;border:1px solid #8FAE94;border-bottom:0;border-radius:10px 10px 0 0;background:#E7EDE4;padding:6px;position:sticky;top:0;z-index:2}
 .rte-bar button{font:inherit;font-size:14px;background:#fff;border:1px solid #C2D3C3;border-radius:7px;padding:6px 11px;margin:3px;cursor:pointer;color:#26382C}
@@ -319,6 +320,7 @@ export async function admin(request, env, url) {
       <p class="meta"><span class="tag${live ? ' live' : ''}">${live ? 'Published' : 'Draft'}</span>${address}</p>
       <label for="f-title">Title</label><input type="text" id="f-title" maxlength="140" value="${esc(p.title)}">
       <label for="f-audience">Who is it for</label><select id="f-audience">${AUDIENCES.map((t) => `<option${t === audienceOf(p.audience) ? ' selected' : ''}>${esc(t)}</option>`).join('')}</select>
+      ${live && p.published ? `<label for="f-date">Date shown on the article <small>– change it if you want a different date. The Blog page lists articles newest first by this date.</small></label><input type="date" id="f-date" value="${esc(p.published)}" min="2020-01-01" max="${esc(today())}" placeholder="YYYY-MM-DD">` : ''}
       <label for="f-teaser">Summary <small>– one or two lines, shown on the Blog page under the title</small></label><textarea id="f-teaser" maxlength="300" style="min-height:64px">${esc(p.teaser)}</textarea>
       <label id="l-body">Article</label>
       <div class="rte-bar" id="rte-bar"><button type="button" data-cmd="formatBlock" data-arg="h2">Heading</button><button type="button" data-cmd="formatBlock" data-arg="h3">Small heading</button><button type="button" data-cmd="formatBlock" data-arg="p">Normal text</button><button type="button" data-cmd="bold"><b>Bold</b></button><button type="button" data-cmd="italic"><i>Italic</i></button><button type="button" data-cmd="insertUnorderedList">• List</button><button type="button" data-cmd="insertOrderedList">1. List</button><button type="button" data-cmd="formatBlock" data-arg="blockquote">Quote</button><button type="button" data-cmd="link">Link</button><button type="button" data-cmd="unlink">Remove link</button></div>
@@ -500,6 +502,14 @@ async function adminAction(request, env, { path, origin }) {
     const action = String(body.action || 'save');
     const status = action === 'publish' ? 'published' : action === 'unpublish' ? 'draft' : (cur && cur.status) || 'draft';
     const day = today();
+    // once an article has been published she can move the date it shows (and is sorted by); empty = keep it
+    let shown = (cur && cur.published) || (status === 'published' ? day : '');
+    const asked = String(body.published || '').trim();
+    if (asked && cur && cur.published && asked !== cur.published) {
+      const real = /^\d{4}-\d{2}-\d{2}$/.test(asked) && !isNaN(Date.parse(asked + 'T12:00:00Z')) && new Date(asked + 'T12:00:00Z').toISOString().slice(0, 10) === asked;
+      if (!real || asked > day || asked < '2020-01-01') return json({ ok: false, message: 'Please choose a real date that isn\'t in the future (for example 2026-10-29).' }, 422);
+      shown = asked;
+    }
     const next = {
       slug: cur ? cur.slug : '',
       title,
@@ -508,7 +518,7 @@ async function adminAction(request, env, { path, origin }) {
       description: field(body.description, 320),
       body: cleanBlocks(body.body),
       status,
-      published: (cur && cur.published) || (status === 'published' ? day : ''),
+      published: shown,
       updated: day,
     };
     if (status === 'published' && (!next.teaser || !plain(next.body))) return json({ ok: false, message: 'Please add a summary and the article text before publishing.' }, 422);

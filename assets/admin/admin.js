@@ -62,7 +62,7 @@
     var guide = page === 'guide';
     var cfg = guide
       ? { api: '/admin/api/guide', del: '/admin/api/guide-delete', edit: '/admin/guides/edit?slug=', list: '/admin/guides', thing: 'guide', where: 'the Free Guides page', summary: 'f-intro', summaryName: 'an introduction', fields: ['f-title', 'f-intro', 'f-audience', 'f-body'] }
-      : { api: '/admin/api/post', del: '/admin/api/post-delete', edit: '/admin/blog/edit?slug=', list: '/admin/blog', thing: 'article', where: 'the Blog page', summary: 'f-teaser', summaryName: 'a summary', fields: ['f-title', 'f-teaser', 'f-description', 'f-audience', 'f-body'] };
+      : { api: '/admin/api/post', del: '/admin/api/post-delete', edit: '/admin/blog/edit?slug=', list: '/admin/blog', thing: 'article', where: 'the Blog page', summary: 'f-teaser', summaryName: 'a summary', fields: ['f-title', 'f-teaser', 'f-description', 'f-audience', 'f-body', 'f-date'] };
     var live = !!document.querySelector('[data-action="unpublish"]');
     var body = document.getElementById('f-body');
     var dirty = false;
@@ -120,7 +120,13 @@
       } else { document.execCommand('insertText', false, text); }
       dirty = true;
     });
-    cfg.fields.forEach(function (id) { document.getElementById(id).addEventListener('input', function () { dirty = true; }); });
+    // f-date (the date an article shows) is only there once the article is published
+    cfg.fields.forEach(function (id) {
+      var el = document.getElementById(id);
+      if (!el) { return; }
+      el.addEventListener('input', function () { dirty = true; });
+      el.addEventListener('change', function () { dirty = true; });
+    });
     window.addEventListener('beforeunload', function (ev) { if (dirty) { ev.preventDefault(); ev.returnValue = ''; } });
     var buttons = Array.prototype.slice.call(document.querySelectorAll('[data-action]'));
     var busy = function (on) { buttons.forEach(function (x) { x.disabled = on; }); };
@@ -155,7 +161,11 @@
         busy(true);   // one click, one save: a second click on a new one would otherwise create a copy
         var fields = { original: data.slug, action: action, title: document.getElementById('f-title').value, audience: document.getElementById('f-audience').value, body: body.innerHTML };
         if (guide) { fields.intro = document.getElementById('f-intro').value; }
-        else { fields.teaser = document.getElementById('f-teaser').value; fields.description = document.getElementById('f-description').value; }
+        else {
+          fields.teaser = document.getElementById('f-teaser').value; fields.description = document.getElementById('f-description').value;
+          var shown = document.getElementById('f-date');
+          if (shown) { fields.published = shown.value; }
+        }
         post(cfg.api, fields).then(function (r) {
           busy(false);
           if (!r.ok) { fail(r); return; }
